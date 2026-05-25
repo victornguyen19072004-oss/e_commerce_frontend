@@ -1,0 +1,17 @@
+{
+  "project": "e_commerce",
+  "platform": "ios",
+  "github": {
+    "owner": "victornguyen19072004-oss",
+    "repo": "e_commerce_frontend"
+  },
+  "ios": {
+    "path": "ios"
+  },
+  "flutter": {
+    "version": "3.41.9",
+    "watch": {}
+  },
+  "reactNative": {},
+  "mobai": {}
+}
