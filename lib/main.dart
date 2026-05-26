@@ -9,15 +9,15 @@ import 'signup_page.dart';
 import 'forgot_password_page.dart';
 
 // Cấu hình iPhone 11 Pro Max
-final DeviceInfo iphone11ProMax = DeviceInfo.genericPhone(
-  platform: TargetPlatform.iOS,
-  id: 'iphone-11-pro-max',
-  name: 'iPhone 11 Pro Max',
-  screenSize: const Size(414, 896),
-  pixelRatio: 3.0,
-  safeAreas: const EdgeInsets.only(top: 44, bottom: 34),
-  rotatedSafeAreas: const EdgeInsets.only(left: 44, right: 44, bottom: 21),
-);
+// final DeviceInfo iphone11ProMax = DeviceInfo.genericPhone(
+//   platform: TargetPlatform.iOS,
+//   id: 'iphone-11-pro-max',
+//   name: 'iPhone 11 Pro Max',
+//   screenSize: const Size(414, 896),
+//   pixelRatio: 3.0,
+//   safeAreas: const EdgeInsets.only(top: 44, bottom: 34),
+//   rotatedSafeAreas: const EdgeInsets.only(left: 44, right: 44, bottom: 21),
+// );
 
 void main() {
   SystemChrome.setSystemUIOverlayStyle(
@@ -28,11 +28,12 @@ void main() {
   );
 
   runApp(
-    DevicePreview(
-      enabled: !kReleaseMode,
-      devices: [...Devices.all, iphone11ProMax],
-      builder: (context) => const EcommerceApp(),
-    ),
+    // DevicePreview(
+    //   enabled: !kReleaseMode,
+    //   devices: [...Devices.all, iphone11ProMax],
+    //   builder: (context) => const EcommerceApp(),
+    // ),
+    const EcommerceApp(),
   );
 }
 
@@ -49,8 +50,8 @@ class EcommerceApp extends StatelessWidget {
         scaffoldBackgroundColor: const Color(0xFFF9F9F9),
         fontFamily: 'Metropolis',
       ),
-      locale: DevicePreview.locale(context),
-      builder: DevicePreview.appBuilder,
+      // locale: DevicePreview.locale(context),
+      // builder: DevicePreview.appBuilder,
 
       // Đặt initialRoute là /signup để chạy thẳng vào màn hình Đăng ký
       initialRoute: '/signup',
