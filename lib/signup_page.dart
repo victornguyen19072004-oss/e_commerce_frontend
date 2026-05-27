@@ -1,7 +1,136 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'services/auth_service.dart';
+import '../config/google_config.dart';
 
-class SignUpPage extends StatelessWidget {
+class SignUpPage extends StatefulWidget {
   const SignUpPage({Key? key}) : super(key: key);
+
+  @override
+  State<SignUpPage> createState() => _SignUpPageState();
+}
+
+class _SignUpPageState extends State<SignUpPage> {
+  final TextEditingController _nameController = TextEditingController(text: 'Mr. Muffin');
+  final TextEditingController _emailController = TextEditingController(text: 'mrmuffi@gmail.com'); // Sửa lại email hợp lệ
+  final TextEditingController _passwordController = TextEditingController();
+
+  final AuthService _authService = AuthService();
+  final FlutterSecureStorage _storage = const FlutterSecureStorage();
+  
+  bool _isLoading = false;
+
+  final GoogleSignIn _googleSignIn = GoogleSignIn(
+    scopes: ['email', 'profile', 'openid'],
+    clientId: kIsWeb ? GoogleConfig.webClientId : GoogleConfig.iOSClientId,
+  );
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  // ====================== ĐĂNG KÝ/ĐĂNG NHẬP BẰNG GOOGLE ======================
+  Future<void> _handleGoogleSignIn() async {
+    setState(() => _isLoading = true);
+    try {
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      if (googleUser == null) {
+        setState(() => _isLoading = false);
+        return; 
+      }
+
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final String? idToken = googleAuth.idToken;
+
+      if (idToken == null) {
+        _showSnackBar("Không lấy được chứng thực từ Google.");
+        return;
+      }
+
+      final result = await _authService.oauthLogin("google", idToken);
+
+      String? token = result['accessToken'];
+      if (token != null) {
+        await _storage.write(key: 'auth_token', value: token);
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Đăng ký bằng Google thành công!"), backgroundColor: Colors.green),
+          );
+          // Navigator.pushReplacementNamed(context, '/home'); 
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        String cleanError = e.toString().replaceAll('Exception: ', '');
+        _showSnackBar("Google Sign-In thất bại: $cleanError");
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  // ====================== ĐĂNG KÝ BÌNH THƯỜNG ======================
+  Future<void> _handleRegister() async {
+    if (_nameController.text.trim().isEmpty || 
+        _emailController.text.trim().isEmpty || 
+        _passwordController.text.isEmpty) {
+      _showSnackBar("Vui lòng điền đầy đủ thông tin");
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      // Tách Name thành firstName và lastName
+      List<String> nameParts = _nameController.text.trim().split(' ');
+      String firstName = nameParts[0];
+      String lastName = nameParts.length > 1 ? nameParts.sublist(1).join(' ') : '';
+
+      final result = await _authService.register(
+        firstName,
+        lastName,
+        _emailController.text.trim(),
+        _passwordController.text,
+      );
+
+      String? token = result['accessToken'];
+      if (token != null) {
+        await _storage.write(key: 'auth_token', value: token);
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Đăng ký thành công!"), backgroundColor: Colors.green),
+          );
+          // Chuyển về trang login hoặc trang chủ sau khi thành công
+          // Navigator.pushReplacementNamed(context, '/login'); 
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        String cleanError = e.toString().replaceAll('Exception: ', '');
+        _showSnackBar(cleanError);
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), behavior: SnackBarBehavior.floating),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -13,11 +142,9 @@ class SignUpPage extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 12),
-              // Nút Back
               IconButton(
                 icon: const Icon(Icons.arrow_back_ios_new, size: 20),
                 onPressed: () {
-                  // Xử lý sự kiện quay lại
                   if (Navigator.canPop(context)) {
                     Navigator.pop(context);
                   }
@@ -28,12 +155,11 @@ class SignUpPage extends StatelessWidget {
               ),
               const SizedBox(height: 32),
 
-              // Tiêu đề
               const Text(
                 'Sign up',
                 style: TextStyle(
                   fontSize: 34,
-                  fontWeight: FontWeight.bold, // Đã in đậm tiêu đề
+                  fontWeight: FontWeight.bold,
                   color: Colors.black,
                 ),
               ),
@@ -42,19 +168,15 @@ class SignUpPage extends StatelessWidget {
               // Form Nhập liệu
               _buildTextField(
                 label: 'Name',
-                initialValue: 'Mr. Muffin',
-                suffixIcon: Image.asset(
-                  'assets/images/icon/green-tick.png',
-                  width: 20,
-                  height: 20,
-                ),
+                controller: _nameController,
+                suffixIcon: Image.asset('assets/images/icon/green-tick.png', width: 20, height: 20),
               ),
               const SizedBox(height: 8),
 
-              _buildTextField(label: 'Email', initialValue: 'mrmuffi'),
+              _buildTextField(label: 'Email', controller: _emailController),
               const SizedBox(height: 8),
 
-              _buildTextField(label: 'Password', isPassword: true),
+              _buildTextField(label: 'Password', controller: _passwordController, isPassword: true),
               const SizedBox(height: 16),
 
               // Nút chuyển sang Đăng nhập
@@ -63,45 +185,37 @@ class SignUpPage extends StatelessWidget {
                 children: [
                   const Text(
                     'Already have an account? ',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold, // Chỉnh in đậm theo yêu cầu
-                    ),
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                   ),
                   GestureDetector(
                     onTap: () => Navigator.pushNamed(context, '/login'),
-                    child: const Icon(
-                      Icons.arrow_right_alt,
-                      color: Color(0xFFDB3022), // Màu đỏ theo thiết kế
-                      size: 28,
-                    ),
+                    child: const Icon(Icons.arrow_right_alt, color: Color(0xFFDB3022), size: 28),
                   ),
                 ],
               ),
               const SizedBox(height: 28),
 
-              // Nút SIGN UP
+              // Nút SIGN UP (Đã kết nối với _handleRegister)
               SizedBox(
                 width: double.infinity,
                 height: 48,
                 child: ElevatedButton(
-                  onPressed: () {},
+                  onPressed: _isLoading ? null : _handleRegister,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFDB3022),
                     elevation: 4,
                     shadowColor: const Color(0xFFDB3022).withOpacity(0.4),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(25),
-                    ),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
                   ),
-                  child: const Text(
-                    'SIGN UP',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
+                  child: _isLoading
+                      ? const SizedBox(
+                          width: 20, height: 20,
+                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                        )
+                      : const Text(
+                          'SIGN UP',
+                          style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500),
+                        ),
                 ),
               ),
 
@@ -113,23 +227,20 @@ class SignUpPage extends StatelessWidget {
                   children: [
                     const Text(
                       'Or sign up with social account',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold, // Chỉnh in đậm theo yêu cầu
-                      ),
+                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 16),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        _buildSocialButton(
-                          'assets/images/button/google-icon.png',
+                        GestureDetector(
+                          onTap: _isLoading ? null : _handleGoogleSignIn,
+                          child: _buildSocialButton('assets/images/button/google-icon.png'),
                         ),
                         const SizedBox(width: 16),
-                        // Bật cờ isRounded = true để bo góc icon Facebook
-                        _buildSocialButton(
-                          'assets/images/button/facebook-icon.png',
-                          isRounded: true,
+                        GestureDetector(
+                          onTap: () => _showSnackBar("Facebook đang phát triển..."),
+                          child: _buildSocialButton('assets/images/button/facebook-icon.png', isRounded: true),
                         ),
                       ],
                     ),
@@ -144,10 +255,9 @@ class SignUpPage extends StatelessWidget {
     );
   }
 
-  // Widget dùng chung để tạo ô nhập liệu trắng có bóng đổ
   Widget _buildTextField({
     required String label,
-    String? initialValue,
+    TextEditingController? controller,
     Widget? suffixIcon,
     bool isPassword = false,
   }) {
@@ -164,24 +274,19 @@ class SignUpPage extends StatelessWidget {
         ],
       ),
       child: TextFormField(
-        initialValue: initialValue,
+        controller: controller,
         obscureText: isPassword,
-        // Font chữ của Mr. Muffin, mrmuffi được in đậm tại đây
         style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
         decoration: InputDecoration(
           labelText: label,
-          // Đảm bảo phần nhãn (Label) vẫn bình thường, không in đậm
           labelStyle: const TextStyle(
             color: Colors.grey,
             fontSize: 13,
             fontWeight: FontWeight.normal,
           ),
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 20,
-            vertical: 16,
-          ),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           border: InputBorder.none,
-          floatingLabelBehavior: FloatingLabelBehavior.always, // Ép nhãn luôn trôi lên trên như thiết kế
+          floatingLabelBehavior: FloatingLabelBehavior.always,
           suffixIcon: suffixIcon != null
               ? Padding(padding: const EdgeInsets.all(16.0), child: suffixIcon)
               : null,
@@ -190,7 +295,6 @@ class SignUpPage extends StatelessWidget {
     );
   }
 
-  // Widget dùng chung để tạo ô Social Button (đã thêm logic bo góc)
   Widget _buildSocialButton(String assetPath, {bool isRounded = false}) {
     return Container(
       width: 92,
@@ -209,15 +313,21 @@ class SignUpPage extends StatelessWidget {
       child: Center(
         child: isRounded
             ? ClipRRect(
-                borderRadius: BorderRadius.circular(4.0), // Bo tròn nhẹ 4 góc
-                child: Image.asset(
-                  assetPath,
-                  width: 24,
-                  height: 24,
-                  fit: BoxFit.cover,
-                ),
+                borderRadius: BorderRadius.circular(4.0),
+                child: Image.asset(assetPath, width: 24, height: 24, fit: BoxFit.cover),
               )
-            : Image.asset(assetPath, width: 24, height: 24),
+            : Image.asset(
+                assetPath,
+                width: 24,
+                height: 24,
+                errorBuilder: (context, error, stackTrace) {
+                  return Icon(
+                    assetPath.contains('google') ? Icons.g_mobiledata : Icons.facebook,
+                    size: 32,
+                    color: Colors.grey,
+                  );
+                },
+              ),
       ),
     );
   }

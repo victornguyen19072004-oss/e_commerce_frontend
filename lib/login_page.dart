@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'services/api_service.dart';
-
+import 'services/auth_service.dart';
+import '../config/google_config.dart';
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
 
@@ -13,18 +13,21 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   // Controllers
-  final TextEditingController _emailController = TextEditingController(text: 'muffin.sweet@gmail.com');
+  final TextEditingController _emailController = TextEditingController(
+    text: 'muffin.sweet@gmail.com',
+  );
   final TextEditingController _passwordController = TextEditingController();
 
-  final ApiService _apiService = ApiService();
+  final AuthService _authService = AuthService();
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
+  
+  // Trạng thái hiển thị vòng xoay đợi tải dữ liệu từ Render
+  bool _isLoading = false;
 
-  // Google Sign In
+  // Google Sign In Configuration
   final GoogleSignIn _googleSignIn = GoogleSignIn(
     scopes: ['email', 'profile'],
-    clientId: kIsWeb
-        ? '790202574296-9qsllsor2jv2n4qmg7d38fi1p3p6netv.apps.googleusercontent.com' // Web Client ID
-        : '790202574296-7fi2obusn34e5us92tpjhvif6bgfd3ea.apps.googleusercontent.com', // iOS Client ID
+    clientId: kIsWeb ? GoogleConfig.webClientId : GoogleConfig.iOSClientId,
   );
 
   bool _isEmailValid = true;
@@ -36,7 +39,7 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
-  // Kiểm tra email
+  // Kiểm tra định dạng email theo thời gian thực
   void _validateEmail(String value) {
     if (value.isEmpty) {
       setState(() => _isEmailValid = false);
@@ -52,7 +55,7 @@ class _LoginPageState extends State<LoginPage> {
   // ====================== ĐĂNG NHẬP BÌNH THƯỜNG ======================
   Future<void> _handleLogin() async {
     if (!_isEmailValid || _emailController.text.trim().isEmpty) {
-      _showSnackBar("Email không hợp lệ");
+      _showSnackBar("Email không đúng định dạng");
       return;
     }
     if (_passwordController.text.isEmpty) {
@@ -60,58 +63,94 @@ class _LoginPageState extends State<LoginPage> {
       return;
     }
 
+    setState(() => _isLoading = true);
+
     try {
-      final result = await _apiService.login(
+      final result = await _authService.login(
         _emailController.text.trim(),
         _passwordController.text,
       );
 
-      String token = result['accessToken'];
-      await _storage.write(key: 'auth_token', value: token);
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Đăng nhập thành công!")),
-        );
-        // Navigator.pushReplacementNamed(context, '/home');
+      String? token = result['accessToken'];
+      if (token != null) {
+        await _storage.write(key: 'auth_token', value: token);
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Đăng nhập thành công!"), backgroundColor: Colors.green),
+          );
+          // Navigator.pushReplacementNamed(context, '/home');
+        }
+      } else {
+        _showSnackBar("Không nhận được token xác thực từ máy chủ.");
       }
     } catch (e) {
       if (mounted) {
-        _showSnackBar("Lỗi: ${e.toString()}");
+        // Tách chuỗi loại bỏ chữ 'Exception: ' hiển thị cho đẹp
+        String cleanError = e.toString().replaceAll('Exception: ', '');
+        _showSnackBar(cleanError);
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
       }
     }
   }
 
   // ====================== ĐĂNG NHẬP BẰNG GOOGLE ======================
   Future<void> _handleGoogleSignIn() async {
+    setState(() => _isLoading = true);
     try {
+      // 1. Kích hoạt giao diện chọn tài khoản của Google
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-      if (googleUser == null) return;
+      if (googleUser == null) {
+        setState(() => _isLoading = false);
+        return; // Người dùng bấm Hủy (Cancel)
+      }
 
-      final result = await _apiService.oauthLogin(
+      // 2. LẤY idToken TỪ CHỨNG THỰC CỦA GOOGLE
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final String? idToken = googleAuth.idToken;
+
+      if (idToken == null) {
+        _showSnackBar("Không lấy được chứng thực từ Google.");
+        return;
+      }
+
+      // 3. GỬI idToken LÊN BACKEND SPRING BOOT
+      final result = await _authService.oauthLogin(
         "google",
-        googleUser.email,
-        googleUser.displayName ?? "Google User",
-        googleUser.id,
+        idToken, // Chỉ truyền chuỗi Token dài ngoằng vào đây
       );
 
-      String token = result['accessToken'];
-      await _storage.write(key: 'auth_token', value: token);
+      // 4. NHẬN ACCESSTOKEN TỪ BE VÀ LƯU LẠI
+      String? token = result['accessToken'];
+      if (token != null) {
+        await _storage.write(key: 'auth_token', value: token);
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Đăng nhập bằng Google thành công!")),
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Đăng nhập bằng Google thành công!"), backgroundColor: Colors.green),
+          );
+          // Navigator.pushReplacementNamed(context, '/home'); // Chuyển trang sau khi login
+        }
       }
     } catch (e) {
       if (mounted) {
-        _showSnackBar("Google Sign-In thất bại: $e");
+        String cleanError = e.toString().replaceAll('Exception: ', '');
+        _showSnackBar("Google Sign-In thất bại: $cleanError");
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
       }
     }
   }
 
   void _showSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), behavior: SnackBarBehavior.floating),
+    );
   }
 
   @override
@@ -134,7 +173,11 @@ class _LoginPageState extends State<LoginPage> {
 
               const Text(
                 'Login',
-                style: TextStyle(fontSize: 34, fontWeight: FontWeight.bold, color: Colors.black),
+                style: TextStyle(
+                  fontSize: 34,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
               ),
               const SizedBox(height: 72),
 
@@ -146,8 +189,18 @@ class _LoginPageState extends State<LoginPage> {
                 isError: !_isEmailValid,
                 errorText: 'Not a valid email address. Should be your@email.com',
                 suffixIcon: _isEmailValid
-                    ? Image.asset('assets/images/icon/green-tick.png', width: 20, height: 20)
-                    : Image.asset('assets/images/icon/red-tick.png', width: 20, height: 20),
+                    ? Image.asset(
+                        'assets/images/icon/green-tick.png',
+                        width: 20,
+                        height: 20,
+                        errorBuilder: (context, error, stackTrace) => const Icon(Icons.check_circle, color: Colors.green),
+                      )
+                    : Image.asset(
+                        'assets/images/icon/red-tick.png',
+                        width: 20,
+                        height: 20,
+                        errorBuilder: (context, error, stackTrace) => const Icon(Icons.cancel, color: Colors.red),
+                      ),
               ),
               const SizedBox(height: 8),
 
@@ -159,35 +212,57 @@ class _LoginPageState extends State<LoginPage> {
               ),
               const SizedBox(height: 16),
 
-              // Forgot Password
+              // Forgot Password Link
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  const Text('Forgot your password? ', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                  const Text(
+                    'Forgot your password? ',
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                  ),
                   GestureDetector(
                     onTap: () => Navigator.pushNamed(context, '/forgot'),
-                    child: const Icon(Icons.arrow_right_alt, color: Color(0xFFDB3022), size: 28),
+                    child: const Icon(
+                      Icons.arrow_right_alt,
+                      color: Color(0xFFDB3022),
+                      size: 28,
+                    ),
                   ),
                 ],
               ),
               const SizedBox(height: 28),
 
-              // Nút LOGIN
+              // Nút LOGIN (Tích hợp trạng thái Loading)
               SizedBox(
                 width: double.infinity,
                 height: 48,
                 child: ElevatedButton(
-                  onPressed: _handleLogin,
+                  onPressed: _isLoading ? null : _handleLogin,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFDB3022),
                     elevation: 4,
                     shadowColor: const Color(0xFFDB3022).withOpacity(0.4),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(25),
+                    ),
                   ),
-                  child: const Text(
-                    'LOGIN',
-                    style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500),
-                  ),
+                  child: _isLoading
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Text(
+                          'LOGIN',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
                 ),
               ),
 
@@ -197,19 +272,30 @@ class _LoginPageState extends State<LoginPage> {
               Center(
                 child: Column(
                   children: [
-                    const Text('Or login with social account', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                    const Text(
+                      'Or login with social account',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     const SizedBox(height: 16),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         GestureDetector(
-                          onTap: _handleGoogleSignIn,
-                          child: _buildSocialButton('assets/images/button/google-icon.png'),
+                          onTap: _isLoading ? null : _handleGoogleSignIn,
+                          child: _buildSocialButton(
+                            'assets/images/button/google-icon.png',
+                          ),
                         ),
                         const SizedBox(width: 16),
                         GestureDetector(
                           onTap: () => _showSnackBar("Facebook đang phát triển..."),
-                          child: _buildSocialButton('assets/images/button/facebook-icon.png', isRounded: true),
+                          child: _buildSocialButton(
+                            'assets/images/button/facebook-icon.png',
+                            isRounded: true,
+                          ),
                         ),
                       ],
                     ),
@@ -223,7 +309,7 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  // Widget TextField
+  // Widget Tái sử dụng TextField dựng sẵn
   Widget _buildTextField({
     required String label,
     TextEditingController? controller,
@@ -243,7 +329,11 @@ class _LoginPageState extends State<LoginPage> {
             borderRadius: BorderRadius.circular(4),
             border: isError ? Border.all(color: Colors.red, width: 1.0) : null,
             boxShadow: [
-              BoxShadow(color: Colors.black.withOpacity(0.05), offset: const Offset(0, 1), blurRadius: 8),
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                offset: const Offset(0, 1),
+                blurRadius: 8,
+              ),
             ],
           ),
           child: TextFormField(
@@ -254,12 +344,21 @@ class _LoginPageState extends State<LoginPage> {
             style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
             decoration: InputDecoration(
               labelText: label,
-              labelStyle: TextStyle(color: isError ? Colors.red : Colors.grey, fontSize: 13),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              labelStyle: TextStyle(
+                color: isError ? Colors.red : Colors.grey,
+                fontSize: 13,
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 20,
+                vertical: 16,
+              ),
               border: InputBorder.none,
               floatingLabelBehavior: FloatingLabelBehavior.always,
               suffixIcon: suffixIcon != null
-                  ? Padding(padding: const EdgeInsets.all(16.0), child: suffixIcon)
+                  ? Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: suffixIcon,
+                    )
                   : null,
             ),
           ),
@@ -267,7 +366,10 @@ class _LoginPageState extends State<LoginPage> {
         if (isError && errorText != null)
           Padding(
             padding: const EdgeInsets.only(top: 6.0, left: 16.0),
-            child: Text(errorText, style: const TextStyle(color: Colors.red, fontSize: 12)),
+            child:  Text(
+              errorText,
+              style: const TextStyle(color: Colors.red, fontSize: 12),
+            ),
           ),
       ],
     );
@@ -280,12 +382,24 @@ class _LoginPageState extends State<LoginPage> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8)],
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8),
+        ],
       ),
       child: Center(
-        child: isRounded
-            ? ClipRRect(borderRadius: BorderRadius.circular(4), child: Image.asset(assetPath, width: 24, height: 24))
-            : Image.asset(assetPath, width: 24, height: 24),
+        child: Image.asset(
+          assetPath,
+          width: 24,
+          height: 24,
+          errorBuilder: (context, error, stackTrace) {
+            // Trường hợp thiếu asset ảnh, tự động render Icon mặc định để không crash UI trên iOS builder
+            return Icon(
+              assetPath.contains('google') ? Icons.g_mobiledata : Icons.facebook,
+              size: 32,
+              color: Colors.grey,
+            );
+          },
+        ),
       ),
     );
   }
