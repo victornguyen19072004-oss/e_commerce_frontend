@@ -24,7 +24,7 @@ class _SignUpPageState extends State<SignUpPage> {
 
   final GoogleSignIn _googleSignIn = GoogleSignIn(
     scopes: ['email', 'profile', 'openid'],
-    clientId: kIsWeb ? GoogleConfig.webClientId : GoogleConfig.iOSClientId,
+    clientId: GoogleConfig.iOSClientId,
     serverClientId: GoogleConfig.webClientId,
   );
 
