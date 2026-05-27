@@ -26,8 +26,9 @@ class _LoginPageState extends State<LoginPage> {
 
   // Google Sign In Configuration
   final GoogleSignIn _googleSignIn = GoogleSignIn(
-    scopes: ['email', 'profile'],
+    scopes: ['email', 'profile', 'openid'],
     clientId: kIsWeb ? GoogleConfig.webClientId : GoogleConfig.iOSClientId,
+    serverClientId: GoogleConfig.webClientId,
   );
 
   bool _isEmailValid = true;
