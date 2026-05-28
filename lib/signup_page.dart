@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:flutter_facebook_auth/flutter_facebook_auth.dart'; // Import Facebook Auth
 import 'services/auth_service.dart';
 import '../config/google_config.dart';
 
@@ -13,13 +14,17 @@ class SignUpPage extends StatefulWidget {
 }
 
 class _SignUpPageState extends State<SignUpPage> {
-  final TextEditingController _nameController = TextEditingController(text: 'Mr. Muffin');
-  final TextEditingController _emailController = TextEditingController(text: 'mrmuffi@gmail.com'); // Sửa lại email hợp lệ
+  final TextEditingController _nameController = TextEditingController(
+    text: 'Mr. Muffin',
+  );
+  final TextEditingController _emailController = TextEditingController(
+    text: 'mrmuffi@gmail.com',
+  );
   final TextEditingController _passwordController = TextEditingController();
 
   final AuthService _authService = AuthService();
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
-  
+
   bool _isLoading = false;
 
   final GoogleSignIn _googleSignIn = GoogleSignIn(
@@ -36,17 +41,18 @@ class _SignUpPageState extends State<SignUpPage> {
     super.dispose();
   }
 
-  // ====================== ĐĂNG KÝ/ĐĂNG NHẬP BẰNG GOOGLE ======================
+  // ====================== ĐĂNG KÝ BẰNG GOOGLE ======================
   Future<void> _handleGoogleSignIn() async {
     setState(() => _isLoading = true);
     try {
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       if (googleUser == null) {
         setState(() => _isLoading = false);
-        return; 
+        return;
       }
 
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
       final String? idToken = googleAuth.idToken;
 
       if (idToken == null) {
@@ -62,9 +68,13 @@ class _SignUpPageState extends State<SignUpPage> {
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Đăng ký bằng Google thành công!"), backgroundColor: Colors.green),
+            const SnackBar(
+              content: Text("Đăng ký bằng Google thành công!"),
+              backgroundColor: Colors.green,
+            ),
           );
-          // Navigator.pushReplacementNamed(context, '/home'); 
+          // Tự động chuyển hướng sang trang Login
+          Navigator.pushReplacementNamed(context, '/login');
         }
       }
     } catch (e) {
@@ -79,10 +89,59 @@ class _SignUpPageState extends State<SignUpPage> {
     }
   }
 
+  // ====================== ĐĂNG KÝ BẰNG FACEBOOK ======================
+  Future<void> _handleFacebookSignIn() async {
+    setState(() => _isLoading = true);
+    try {
+      final LoginResult fbResult = await FacebookAuth.instance.login(
+        permissions: ['email', 'public_profile'],
+      );
+
+      if (fbResult.status == LoginStatus.success) {
+        final AccessToken accessToken = fbResult.accessToken!;
+
+        final result = await _authService.oauthLogin(
+          "facebook",
+          accessToken.tokenString,
+        );
+
+        String? token = result['accessToken'];
+        if (token != null) {
+          await _storage.write(key: 'auth_token', value: token);
+
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text("Đăng ký bằng Facebook thành công!"),
+                backgroundColor: Colors.green,
+              ),
+            );
+            // Tự động chuyển hướng sang trang Login
+            Navigator.pushReplacementNamed(context, '/login');
+          }
+        }
+      } else if (fbResult.status == LoginStatus.cancelled) {
+        setState(() => _isLoading = false);
+        return;
+      } else {
+        _showSnackBar("Lỗi Facebook: ${fbResult.message}");
+      }
+    } catch (e) {
+      if (mounted) {
+        String cleanError = e.toString().replaceAll('Exception: ', '');
+        _showSnackBar(cleanError);
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
   // ====================== ĐĂNG KÝ BÌNH THƯỜNG ======================
   Future<void> _handleRegister() async {
-    if (_nameController.text.trim().isEmpty || 
-        _emailController.text.trim().isEmpty || 
+    if (_nameController.text.trim().isEmpty ||
+        _emailController.text.trim().isEmpty ||
         _passwordController.text.isEmpty) {
       _showSnackBar("Vui lòng điền đầy đủ thông tin");
       return;
@@ -91,10 +150,11 @@ class _SignUpPageState extends State<SignUpPage> {
     setState(() => _isLoading = true);
 
     try {
-      // Tách Name thành firstName và lastName
       List<String> nameParts = _nameController.text.trim().split(' ');
       String firstName = nameParts[0];
-      String lastName = nameParts.length > 1 ? nameParts.sublist(1).join(' ') : '';
+      String lastName = nameParts.length > 1
+          ? nameParts.sublist(1).join(' ')
+          : '';
 
       final result = await _authService.register(
         firstName,
@@ -106,13 +166,16 @@ class _SignUpPageState extends State<SignUpPage> {
       String? token = result['accessToken'];
       if (token != null) {
         await _storage.write(key: 'auth_token', value: token);
-        
+
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Đăng ký thành công!"), backgroundColor: Colors.green),
+            const SnackBar(
+              content: Text("Đăng ký thành công!"),
+              backgroundColor: Colors.green,
+            ),
           );
-          // Chuyển về trang login hoặc trang chủ sau khi thành công
-          // Navigator.pushReplacementNamed(context, '/login'); 
+          // Tự động chuyển hướng sang trang Login
+          Navigator.pushReplacementNamed(context, '/login');
         }
       }
     } catch (e) {
@@ -170,14 +233,22 @@ class _SignUpPageState extends State<SignUpPage> {
               _buildTextField(
                 label: 'Name',
                 controller: _nameController,
-                suffixIcon: Image.asset('assets/images/icon/green-tick.png', width: 20, height: 20),
+                suffixIcon: Image.asset(
+                  'assets/images/icon/green-tick.png',
+                  width: 20,
+                  height: 20,
+                ),
               ),
               const SizedBox(height: 8),
 
               _buildTextField(label: 'Email', controller: _emailController),
               const SizedBox(height: 8),
 
-              _buildTextField(label: 'Password', controller: _passwordController, isPassword: true),
+              _buildTextField(
+                label: 'Password',
+                controller: _passwordController,
+                isPassword: true,
+              ),
               const SizedBox(height: 16),
 
               // Nút chuyển sang Đăng nhập
@@ -190,13 +261,17 @@ class _SignUpPageState extends State<SignUpPage> {
                   ),
                   GestureDetector(
                     onTap: () => Navigator.pushNamed(context, '/login'),
-                    child: const Icon(Icons.arrow_right_alt, color: Color(0xFFDB3022), size: 28),
+                    child: const Icon(
+                      Icons.arrow_right_alt,
+                      color: Color(0xFFDB3022),
+                      size: 28,
+                    ),
                   ),
                 ],
               ),
               const SizedBox(height: 28),
 
-              // Nút SIGN UP (Đã kết nối với _handleRegister)
+              // Nút SIGN UP
               SizedBox(
                 width: double.infinity,
                 height: 48,
@@ -206,16 +281,26 @@ class _SignUpPageState extends State<SignUpPage> {
                     backgroundColor: const Color(0xFFDB3022),
                     elevation: 4,
                     shadowColor: const Color(0xFFDB3022).withOpacity(0.4),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(25),
+                    ),
                   ),
                   child: _isLoading
                       ? const SizedBox(
-                          width: 20, height: 20,
-                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
                         )
                       : const Text(
                           'SIGN UP',
-                          style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500),
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                 ),
               ),
@@ -228,7 +313,10 @@ class _SignUpPageState extends State<SignUpPage> {
                   children: [
                     const Text(
                       'Or sign up with social account',
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 16),
                     Row(
@@ -236,12 +324,19 @@ class _SignUpPageState extends State<SignUpPage> {
                       children: [
                         GestureDetector(
                           onTap: _isLoading ? null : _handleGoogleSignIn,
-                          child: _buildSocialButton('assets/images/button/google-icon.png'),
+                          child: _buildSocialButton(
+                            'assets/images/button/google-icon.png',
+                          ),
                         ),
                         const SizedBox(width: 16),
                         GestureDetector(
-                          onTap: () => _showSnackBar("Facebook đang phát triển..."),
-                          child: _buildSocialButton('assets/images/button/facebook-icon.png', isRounded: true),
+                          onTap: _isLoading
+                              ? null
+                              : _handleFacebookSignIn, // Kích hoạt nút Facebook
+                          child: _buildSocialButton(
+                            'assets/images/button/facebook-icon.png',
+                            isRounded: true,
+                          ),
                         ),
                       ],
                     ),
@@ -285,7 +380,10 @@ class _SignUpPageState extends State<SignUpPage> {
             fontSize: 13,
             fontWeight: FontWeight.normal,
           ),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 16,
+          ),
           border: InputBorder.none,
           floatingLabelBehavior: FloatingLabelBehavior.always,
           suffixIcon: suffixIcon != null
@@ -315,7 +413,12 @@ class _SignUpPageState extends State<SignUpPage> {
         child: isRounded
             ? ClipRRect(
                 borderRadius: BorderRadius.circular(4.0),
-                child: Image.asset(assetPath, width: 24, height: 24, fit: BoxFit.cover),
+                child: Image.asset(
+                  assetPath,
+                  width: 24,
+                  height: 24,
+                  fit: BoxFit.cover,
+                ),
               )
             : Image.asset(
                 assetPath,
@@ -323,7 +426,9 @@ class _SignUpPageState extends State<SignUpPage> {
                 height: 24,
                 errorBuilder: (context, error, stackTrace) {
                   return Icon(
-                    assetPath.contains('google') ? Icons.g_mobiledata : Icons.facebook,
+                    assetPath.contains('google')
+                        ? Icons.g_mobiledata
+                        : Icons.facebook,
                     size: 32,
                     color: Colors.grey,
                   );
