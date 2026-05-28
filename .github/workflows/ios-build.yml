@@ -36,7 +36,9 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
+        with:
+          ref: new_feature        # ← Thêm dòng này để chỉ định branch
+          fetch-depth: 0
       - name: Setup Xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:
