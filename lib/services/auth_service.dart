@@ -6,8 +6,13 @@ class AuthService {
   static const String baseUrl =
       "https://ecommerce-backend-8wur.onrender.com/api/auth";
 
-  // 1. Logic Đăng ký (Email + Password) - MỚI ĐƯỢC BỔ SUNG
-  Future<Map<String, dynamic>> register(String firstName, String lastName, String email, String password) async {
+  // 1. Logic Đăng ký (Email + Password)
+  Future<Map<String, dynamic>> register(
+    String firstName,
+    String lastName,
+    String email,
+    String password,
+  ) async {
     final response = await http.post(
       Uri.parse('$baseUrl/register'),
       headers: {"Content-Type": "application/json"},
@@ -15,7 +20,7 @@ class AuthService {
         "firstName": firstName,
         "lastName": lastName,
         "email": email,
-        "password": password
+        "password": password,
       }),
     );
 
@@ -53,7 +58,7 @@ class AuthService {
     }
   }
 
-  // 3. Logic Đăng nhập Mạng xã hội (Google)
+  // 3. Logic Đăng nhập Mạng xã hội (Dùng chung cho cả Google & Facebook)
   Future<Map<String, dynamic>> oauthLogin(
     String provider,
     String idToken,
@@ -76,7 +81,10 @@ class AuthService {
           errorData['error'] ?? 'Đăng nhập mạng xã hội thất bại.',
         );
       } catch (_) {
-        throw Exception('Lỗi kết nối đến máy chủ khi đăng nhập Google.');
+        // Tự động viết hoa chữ cái đầu của provider để thông báo lỗi đẹp hơn (VD: facebook -> Facebook)
+        String providerName =
+            provider[0].toUpperCase() + provider.substring(1).toLowerCase();
+        throw Exception('Lỗi kết nối đến máy chủ khi đăng nhập $providerName.');
       }
     }
   }
