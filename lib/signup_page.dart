@@ -97,7 +97,7 @@ class _SignUpPageState extends State<SignUpPage> {
       await FacebookAuth.instance.logOut();
       
       final LoginResult fbResult = await FacebookAuth.instance.login(
-        permissions: ['email', 'public_profile', 'openid'],
+        permissions: ['email', 'public_profile'],
       );
 
       if (fbResult.status == LoginStatus.success) {
