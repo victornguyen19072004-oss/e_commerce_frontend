@@ -116,14 +116,14 @@ class _HomePageState extends State<HomePage> {
     return Stack(
       children: [
         Image.asset(
-          'assets/images/banner/big_banner.jpg',
+          'assets/images/banner/big_banner.png',
           width: double.infinity,
           height: 500, 
           fit: BoxFit.cover,
           errorBuilder: (context, error, stackTrace) => Container(
             height: 500,
             color: Colors.grey[300],
-            child: const Center(child: Text("Missing big_banner.jpg")),
+            child: const Center(child: Text("Missing big_banner.png")),
           ),
         ),
         Positioned(
