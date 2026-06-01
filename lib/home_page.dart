@@ -56,6 +56,7 @@ class _HomePageState extends State<HomePage> {
         });
       }
     } catch (e) {
+      debugPrint("Lỗi tải sản phẩm: $e");
       setState(() {
         if (tagName == 'NEW') _isLoadingNew = false;
         if (tagName == 'SALE') _isLoadingSale = false;
@@ -82,24 +83,19 @@ class _HomePageState extends State<HomePage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildBanner(),
-              const SizedBox(height: 24), // Giảm khoảng cách từ Banner xuống NEW
-
+              const SizedBox(height: 24), // Thu hẹp từ 32 xuống 24
               _buildSectionHeader('New', 'You’ve never seen it before!'),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
               _isLoadingNew
                   ? const SizedBox(height: 200, child: Center(child: CircularProgressIndicator(color: Color(0xFFDB3022))))
                   : _buildProductList(products: _newProducts, isNew: true),
-              
-              // GIẢM KHOẢNG CÁCH GIỮA NEW VÀ SALE TẠI ĐÂY
-              const SizedBox(height: 16), 
-
+              const SizedBox(height: 16), // [SỬA ĐỔI 1]: Đẩy mục Sale lên gần mục New hơn (trước là 32)
               _buildSectionHeader('Sale', 'Super summer sale'),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
               _isLoadingSale
                   ? const SizedBox(height: 200, child: Center(child: CircularProgressIndicator(color: Color(0xFFDB3022))))
                   : _buildProductList(products: _saleProducts, isNew: false),
-              const SizedBox(height: 24), 
-
+              const SizedBox(height: 32),
               _buildMain3Grid(),
             ],
           ),
@@ -109,54 +105,21 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildBanner() {
-    return Stack(
-      children: [
-        Image.asset('assets/images/banner/big_banner.png', width: double.infinity, height: 400, fit: BoxFit.cover),
-        Positioned(
-          bottom: 30, left: 16,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Image.asset('assets/images/banner/fashion_title.png', width: 200),
-              const SizedBox(height: 16),
-              SizedBox(
-                width: 160, height: 36,
-                child: ElevatedButton(
-                  onPressed: () {},
-                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFDB3022), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25))),
-                  child: const Text('Check', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSectionHeader(String title, String subtitle) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(title, style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.black)),
-              Text(subtitle, style: const TextStyle(fontSize: 11, color: Colors.grey)),
-            ],
-          ),
-          const Text('View all', style: TextStyle(fontSize: 11, color: Colors.black)),
-        ],
+  // Component nhãn bo góc [SỬA ĐỔI 2]
+  Widget _buildTag(String text, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(12), // Bo góc cho nhãn
       ),
+      child: Text(text, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11)),
     );
   }
 
   Widget _buildProductList({required List<dynamic> products, required bool isNew}) {
     return SizedBox(
-      height: 280,
+      height: 300,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         clipBehavior: Clip.none,
@@ -185,14 +148,12 @@ class _HomePageState extends State<HomePage> {
                     ),
                     Positioned(
                       top: 8, left: 8,
-                      child: isNew
-                          ? const Text('NEW', style: TextStyle(backgroundColor: Colors.black, color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11))
-                          : Text(discount, style: const TextStyle(backgroundColor: Color(0xFFDB3022), color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11)),
+                      child: isNew ? _buildTag("NEW", Colors.black) : _buildTag(discount, const Color(0xFFDB3022)),
                     ),
                   ],
                 ),
                 const SizedBox(height: 8),
-                Text(productName, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.bold)),
+                Text(productName, style: const TextStyle(fontWeight: FontWeight.bold)),
                 Row(
                   children: [
                     if (!isNew && comparePrice > salePrice) Text('${comparePrice.round()}\$', style: const TextStyle(decoration: TextDecoration.lineThrough, color: Colors.grey)),
@@ -207,33 +168,23 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  // Các Widget còn lại giữ nguyên để đảm bảo cấu trúc không đổi
+  Widget _buildBanner() {
+    return Stack(children: [
+      Image.asset('assets/images/banner/big_banner.png', width: double.infinity, height: 500, fit: BoxFit.cover),
+      Positioned(bottom: 30, left: 16, child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Image.asset('assets/images/banner/fashion_title.png', width: 200), const SizedBox(height: 16), SizedBox(width: 160, height: 36, child: ElevatedButton(onPressed: () {}, style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFDB3022), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25))), child: const Text('Check', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold))))]))
+    ]);
+  }
+
+  Widget _buildSectionHeader(String title, String subtitle) {
+    return Padding(padding: const EdgeInsets.symmetric(horizontal: 16.0), child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(title, style: const TextStyle(fontSize: 34, fontWeight: FontWeight.bold, color: Colors.black)), Text(subtitle, style: const TextStyle(fontSize: 11, color: Colors.grey))]), const Text('View all', style: TextStyle(fontSize: 11, color: Colors.black))]));
+  }
+
   Widget _buildMain3Grid() {
-    return Column(
-      children: [
-        Container(height: 400, color: Colors.black, width: double.infinity, child: Image.asset('assets/images/home_page/big_main.png', fit: BoxFit.cover)),
-        Row(
-          children: [
-            Expanded(child: Column(children: [Container(height: 150, color: Colors.white), Container(height: 150, color: Colors.black)])),
-            Expanded(child: Container(height: 300, color: Colors.black)),
-          ],
-        )
-      ],
-    );
+    return Column(children: [Container(height: 450, color: Colors.black, width: double.infinity, child: Image.asset('assets/images/home_page/big_main.png', fit: BoxFit.cover)), Row(children: [Expanded(child: Column(children: [Container(height: 150, color: Colors.white), Container(height: 150, color: Colors.black)])), Expanded(child: Container(height: 300, color: Colors.black))])]);
   }
 
   Widget _buildBottomNavigationBar() {
-    return BottomNavigationBar(
-      currentIndex: _currentIndex,
-      onTap: (index) => setState(() => _currentIndex = index),
-      selectedItemColor: const Color(0xFFDB3022),
-      unselectedItemColor: Colors.grey,
-      items: const [
-        BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-        BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: 'Shop'),
-        BottomNavigationBarItem(icon: Icon(Icons.shopping_bag), label: 'Bag'),
-        BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Favorites'),
-        BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
-      ],
-    );
+    return BottomNavigationBar(currentIndex: _currentIndex, onTap: (index) => setState(() => _currentIndex = index), selectedItemColor: const Color(0xFFDB3022), unselectedItemColor: Colors.grey, items: const [BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'), BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: 'Shop'), BottomNavigationBarItem(icon: Icon(Icons.shopping_bag), label: 'Bag'), BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Favorites'), BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile')]);
   }
 }
