@@ -39,9 +39,17 @@ post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
     
-    # ÉP PHIÊN BẢN CHO TẤT CẢ PODS VỀ 13.0 KHÔNG BỊ LỖI TRÊN GITHUB ACTIONS
     target.build_configurations.each do |config|
+      # 1. Ép tất cả thư viện dùng iOS 13.0 để tránh lỗi Version
       config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '13.0'
+      
+      # 2. Vô hiệu hóa Sandboxing của Xcode 15+ (Cực kỳ quan trọng để Flutter build được)
+      config.build_settings['ENABLE_USER_SCRIPT_SANDBOXING'] = 'NO'
+      
+      # 3. Tắt ép buộc ký số (Code Signing) đối với các thư viện ngoài như Facebook SDK
+      config.build_settings['CODE_SIGNING_ALLOWED'] = 'NO'
+      config.build_settings['CODE_SIGNING_REQUIRED'] = 'NO'
+      config.build_settings['EXPANDED_CODE_SIGN_IDENTITY'] = '""'
     end
   end
 end
