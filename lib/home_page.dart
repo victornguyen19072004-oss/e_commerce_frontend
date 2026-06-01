@@ -18,7 +18,6 @@ class _HomePageState extends State<HomePage> {
 
   final String _baseUrl = "https://ecommerce-backend-8wur.onrender.com/api/products";
 
-  // Ánh xạ tên sản phẩm với đường dẫn ảnh cố định
   final Map<String, String> _imageMap = {
     "Áo Thun Nam Mùa Hè": "assets/images/product/ao_thun.jpg",
     "Evening Dress Premium": "assets/images/product/evening_dress.jfif",
@@ -57,7 +56,6 @@ class _HomePageState extends State<HomePage> {
         });
       }
     } catch (e) {
-      debugPrint("Lỗi tải sản phẩm: $e");
       setState(() {
         if (tagName == 'NEW') _isLoadingNew = false;
         if (tagName == 'SALE') _isLoadingSale = false;
@@ -84,19 +82,24 @@ class _HomePageState extends State<HomePage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildBanner(),
-              const SizedBox(height: 32),
+              const SizedBox(height: 24), // Giảm khoảng cách từ Banner xuống NEW
+
               _buildSectionHeader('New', 'You’ve never seen it before!'),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
               _isLoadingNew
                   ? const SizedBox(height: 200, child: Center(child: CircularProgressIndicator(color: Color(0xFFDB3022))))
                   : _buildProductList(products: _newProducts, isNew: true),
-              const SizedBox(height: 32),
+              
+              // GIẢM KHOẢNG CÁCH GIỮA NEW VÀ SALE TẠI ĐÂY
+              const SizedBox(height: 16), 
+
               _buildSectionHeader('Sale', 'Super summer sale'),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
               _isLoadingSale
                   ? const SizedBox(height: 200, child: Center(child: CircularProgressIndicator(color: Color(0xFFDB3022))))
                   : _buildProductList(products: _saleProducts, isNew: false),
-              const SizedBox(height: 32),
+              const SizedBox(height: 24), 
+
               _buildMain3Grid(),
             ],
           ),
@@ -109,7 +112,7 @@ class _HomePageState extends State<HomePage> {
   Widget _buildBanner() {
     return Stack(
       children: [
-        Image.asset('assets/images/banner/big_banner.png', width: double.infinity, height: 500, fit: BoxFit.cover),
+        Image.asset('assets/images/banner/big_banner.png', width: double.infinity, height: 400, fit: BoxFit.cover),
         Positioned(
           bottom: 30, left: 16,
           child: Column(
@@ -141,7 +144,7 @@ class _HomePageState extends State<HomePage> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title, style: const TextStyle(fontSize: 34, fontWeight: FontWeight.bold, color: Colors.black)),
+              Text(title, style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.black)),
               Text(subtitle, style: const TextStyle(fontSize: 11, color: Colors.grey)),
             ],
           ),
@@ -153,7 +156,7 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildProductList({required List<dynamic> products, required bool isNew}) {
     return SizedBox(
-      height: 300,
+      height: 280,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         clipBehavior: Clip.none,
@@ -162,7 +165,7 @@ class _HomePageState extends State<HomePage> {
         itemBuilder: (context, index) {
           final product = products[index];
           String productName = product['productName'] ?? '';
-          String imagePath = _imageMap[productName] ?? 'assets/images/product/ao_thun.jpg'; // Ảnh mặc định
+          String imagePath = _imageMap[productName] ?? 'assets/images/product/ao_thun.jpg';
 
           double salePrice = double.tryParse(product['salePrice'].toString()) ?? 0.0;
           double comparePrice = double.tryParse(product['comparePrice'].toString()) ?? 0.0;
@@ -189,7 +192,7 @@ class _HomePageState extends State<HomePage> {
                   ],
                 ),
                 const SizedBox(height: 8),
-                Text(productName, style: const TextStyle(fontWeight: FontWeight.bold)),
+                Text(productName, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.bold)),
                 Row(
                   children: [
                     if (!isNew && comparePrice > salePrice) Text('${comparePrice.round()}\$', style: const TextStyle(decoration: TextDecoration.lineThrough, color: Colors.grey)),
@@ -207,7 +210,7 @@ class _HomePageState extends State<HomePage> {
   Widget _buildMain3Grid() {
     return Column(
       children: [
-        Container(height: 450, color: Colors.black, width: double.infinity, child: Image.asset('assets/images/home_page/big_main.png', fit: BoxFit.cover)),
+        Container(height: 400, color: Colors.black, width: double.infinity, child: Image.asset('assets/images/home_page/big_main.png', fit: BoxFit.cover)),
         Row(
           children: [
             Expanded(child: Column(children: [Container(height: 150, color: Colors.white), Container(height: 150, color: Colors.black)])),
