@@ -77,7 +77,6 @@ class _HomePageState extends State<HomePage> {
               ),
               const SizedBox(height: 16),
               
-              // [SỬA ĐỔI 3]: Thay thế ảnh tĩnh bằng nút bấm thực sự của Flutter để chữ Check căn giữa 100%
               SizedBox(
                 width: 160,
                 height: 36,
@@ -90,7 +89,7 @@ class _HomePageState extends State<HomePage> {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(25), // Bo tròn 2 đầu
                     ),
-                    elevation: 0, // Xóa bóng mờ để giống thiết kế phẳng
+                    elevation: 0, 
                     padding: EdgeInsets.zero,
                   ),
                   child: const Text(
@@ -235,7 +234,7 @@ class _HomePageState extends State<HomePage> {
         // Khối 1: New Collection
         Container(
           width: double.infinity,
-          height: 450, // [SỬA ĐỔI 4]: Tăng chiều cao lên 450
+          height: 450, 
           decoration: const BoxDecoration(color: Colors.black),
           child: Stack(
             children: [
@@ -244,7 +243,7 @@ class _HomePageState extends State<HomePage> {
                 width: double.infinity, 
                 height: 450, 
                 fit: BoxFit.cover,
-                alignment: Alignment.topCenter, // Ưu tiên giữ lại phần đỉnh (tóc/mặt) của ảnh
+                alignment: Alignment.topCenter, 
                 errorBuilder: (context, error, stackTrace) => Container(color: Colors.grey)
               ),
               const Positioned(
@@ -303,42 +302,39 @@ class _HomePageState extends State<HomePage> {
       onTap: (index) => setState(() => _currentIndex = index),
       type: BottomNavigationBarType.fixed,
       backgroundColor: Colors.white,
-      showSelectedLabels: false, // [SỬA ĐỔI 1]: Tắt Label để chữ không bị đè lên ảnh
-      showUnselectedLabels: false,
-      items: [
-        // [SỬA ĐỔI 2]: Nếu tab được chọn thì dùng ảnh không có bộ lọc (màu gốc). Nếu không chọn thì chuyển xám.
+      selectedItemColor: const Color(0xFFDB3022), // Màu đỏ khi được chọn
+      unselectedItemColor: Colors.grey, // Màu xám nét viền khi không chọn
+      showSelectedLabels: true, // Bật lại hiển thị chữ
+      showUnselectedLabels: true,
+      selectedLabelStyle: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+      unselectedLabelStyle: const TextStyle(fontSize: 10, fontWeight: FontWeight.w500),
+      items: const [
         BottomNavigationBarItem(
-          icon: _buildNavIcon('assets/images/nav_bar/tab1_home.png', 0), 
-          label: ''
+          icon: Icon(Icons.home_outlined), // Viền rỗng
+          activeIcon: Icon(Icons.home), // Cục đặc màu đỏ
+          label: 'Home',
         ),
         BottomNavigationBarItem(
-          icon: _buildNavIcon('assets/images/nav_bar/tab2_shop.png', 1), 
-          label: ''
+          icon: Icon(Icons.shopping_cart_outlined),
+          activeIcon: Icon(Icons.shopping_cart),
+          label: 'Shop',
         ),
         BottomNavigationBarItem(
-          icon: _buildNavIcon('assets/images/nav_bar/tab3_bag.png', 2), 
-          label: ''
+          icon: Icon(Icons.shopping_bag_outlined),
+          activeIcon: Icon(Icons.shopping_bag),
+          label: 'Bag',
         ),
         BottomNavigationBarItem(
-          icon: _buildNavIcon('assets/images/nav_bar/tab4_favorite.png', 3), 
-          label: ''
+          icon: Icon(Icons.favorite_outline),
+          activeIcon: Icon(Icons.favorite),
+          label: 'Favorites',
         ),
         BottomNavigationBarItem(
-          icon: _buildNavIcon('assets/images/nav_bar/tab5_my_profile.png', 4), 
-          label: ''
+          icon: Icon(Icons.person_outline),
+          activeIcon: Icon(Icons.person),
+          label: 'Profile',
         ),
       ],
-    );
-  }
-
-  // Hàm hỗ trợ render Icon Navigation Bar
-  Widget _buildNavIcon(String path, int index) {
-    return Image.asset(
-      path,
-      width: 44, // Tăng kích thước chiều rộng ảnh để chữ trong ảnh dễ đọc hơn
-      // Nếu tab này đang được chọn thì color = null (giữ màu gốc của ảnh). Nếu không thì phủ lớp xám.
-      color: _currentIndex == index ? null : Colors.grey,
-      errorBuilder: (context, error, stackTrace) => const Icon(Icons.image_not_supported, color: Colors.grey),
     );
   }
 }
