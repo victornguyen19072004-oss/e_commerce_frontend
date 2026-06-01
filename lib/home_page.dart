@@ -51,7 +51,7 @@ class _HomePageState extends State<HomePage> {
       children: [
         // Ảnh nền Banner
         Image.asset(
-          'assets/images/banner/big_banner.jpg',
+          'assets/images/banner/big_banner.png',
           width: double.infinity,
           height: 500, // Chiều cao mô phỏng theo Figma
           fit: BoxFit.cover,
