@@ -56,7 +56,7 @@ class EcommerceApp extends StatelessWidget {
       // Đặt initialRoute là /signup để chạy thẳng vào màn hình Đăng ký
       initialRoute: '/signup',
       routes: {
-        '/home': (context) => const HomePage(),
+        '/home': (context) => HomePage(),
         '/login': (context) => const LoginPage(),
         '/signup': (context) => const SignUpPage(),
         '/forgot': (context) => const ForgotPasswordPage(),
