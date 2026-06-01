@@ -88,7 +88,12 @@ flutter:
     - assets/images/nav_bar/tab3_bag.png
     - assets/images/nav_bar/tab4_favorite.png
     - assets/images/nav_bar/tab5_my_profile.png
-
+    - assets/images/product/ao_thun.jpg
+    - assets/images/product/evening_dress.jfif
+    - assets/images/product/giay_nike.jfif
+    - assets/images/product/kinh_mat.jpg
+    - assets/images/product/quan_jean.jpg
+    - assets/images/product/tui_xach.jfif
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
 
