@@ -69,6 +69,25 @@ flutter:
     - assets/images/button/google-icon.png
     - assets/images/icon/green-tick.png
     - assets/images/icon/red-tick.png
+    # --- BỔ SUNG CÁC ẢNH CHO TRANG HOME TẠI ĐÂY ---
+    - assets/images/banner/big_banner.jpg
+    - assets/images/banner/fashion_title.png
+    - assets/images/banner/check_button.png
+    - assets/images/button/new_tag.png
+    - assets/images/product/sale_1.png
+    - assets/images/product/sale_2.png
+    - assets/images/product/sale_3.png
+    - assets/images/product/sale_4.png
+    - assets/images/product/sale_5.png
+    - assets/images/product/sale_6.png
+    - assets/images/home_page/big_main.png
+    - assets/images/home_page/main_2.png
+    - assets/images/home_page/main_3.png
+    - assets/images/nav_bar/tab1_home.png
+    - assets/images/nav_bar/tab2_shop.png
+    - assets/images/nav_bar/tab3_bag.png
+    - assets/images/nav_bar/tab4_favorite.png
+    - assets/images/nav_bar/tab5_my_profile.png
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
 
