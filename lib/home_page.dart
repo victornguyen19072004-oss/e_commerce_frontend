@@ -8,7 +8,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  int _currentIndex = 0; // Trạng thái của Bottom Navigation Bar
+  int _currentIndex = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -22,13 +22,13 @@ class _HomePageState extends State<HomePage> {
             _buildBanner(),
             const SizedBox(height: 32),
 
-            // 2. Phần Section: NEW (Được yêu cầu đặt TREN Sale)
+            // 2. Phần Section: NEW
             _buildSectionHeader('New', 'You’ve never seen it before!'),
             const SizedBox(height: 16),
             _buildProductList(isNew: true),
             const SizedBox(height: 32),
 
-            // 3. Phần Section: SALE (Phần Main 2)
+            // 3. Phần Section: SALE
             _buildSectionHeader('Sale', 'Super summer sale'),
             const SizedBox(height: 16),
             _buildProductList(isNew: false),
@@ -50,17 +50,17 @@ class _HomePageState extends State<HomePage> {
       children: [
         // Ảnh nền Banner
         Image.asset(
-          'assets/images/banner/big_banner.png', // Cập nhật đúng đuôi .jpg như đã khai báo trước đó
+          'assets/images/banner/big_banner.png',
           width: double.infinity,
-          height: 500, // Chiều cao mô phỏng theo Figma
+          height: 500, 
           fit: BoxFit.cover,
           errorBuilder: (context, error, stackTrace) => Container(
             height: 500,
             color: Colors.grey[300],
-            child: const Center(child: Text("Missing big_banner.jpg")),
+            child: const Center(child: Text("Missing big_banner.png")),
           ),
         ),
-        // Chữ Fashion Sale và Nút Check đè lên trên
+        
         Positioned(
           bottom: 30,
           left: 16,
@@ -72,24 +72,37 @@ class _HomePageState extends State<HomePage> {
                 width: 200,
                 errorBuilder: (context, error, stackTrace) => const Text(
                   "Fashion\nsale",
-                  style: TextStyle(color: Colors.white, fontSize: 34, fontWeight: FontWeight.bold),
+                  style: TextStyle(color: Colors.white, fontSize: 34, fontWeight: FontWeight.bold, height: 1.2),
                 ),
               ),
               const SizedBox(height: 16),
-              Stack(
-                alignment: Alignment.center,
-                children: [
-                  Image.asset(
-                    'assets/images/banner/check_button.png',
-                    width: 160,
-                    errorBuilder: (context, error, stackTrace) => Container(
-                      width: 160, height: 36,
-                      decoration: BoxDecoration(color: const Color(0xFFDB3022), borderRadius: BorderRadius.circular(25)),
+              
+              // [SỬA ĐỔI 3]: Thay thế ảnh tĩnh bằng nút bấm thực sự của Flutter để chữ Check căn giữa 100%
+              SizedBox(
+                width: 160,
+                height: 36,
+                child: ElevatedButton(
+                  onPressed: () {
+                    // Xử lý sự kiện khi bấm nút Check
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFDB3022), // Màu đỏ chủ đạo
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(25), // Bo tròn 2 đầu
+                    ),
+                    elevation: 0, // Xóa bóng mờ để giống thiết kế phẳng
+                    padding: EdgeInsets.zero,
+                  ),
+                  child: const Text(
+                    'Check',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
                     ),
                   ),
-                  const Text('Check', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
-                ],
-              )
+                ),
+              ),
             ],
           ),
         ),
@@ -102,12 +115,12 @@ class _HomePageState extends State<HomePage> {
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.center, // [SỬA ĐỔI 1]: Căn giữa theo chiều dọc
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title, style: const TextStyle(fontSize: 34, fontWeight: FontWeight.bold, color: Colors.black)),
+              Text(title, style: const TextStyle(fontSize: 34, fontWeight: FontWeight.bold, color: Colors.black, height: 1.1)),
               const SizedBox(height: 4),
               Text(subtitle, style: const TextStyle(fontSize: 11, color: Colors.grey)),
             ],
@@ -119,16 +132,14 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildProductList({required bool isNew}) {
-    // Tạm thời hiển thị 3 sản phẩm tĩnh
     return SizedBox(
-      height: 300, // [SỬA ĐỔI 5]: Tăng chiều cao để không cắt nút thả tim
+      height: 300, 
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        clipBehavior: Clip.none, // Quan trọng: Cho phép nút thả tim tràn ra ngoài khung List
+        clipBehavior: Clip.none, 
         padding: const EdgeInsets.only(left: 16.0),
         itemCount: 3,
         itemBuilder: (context, index) {
-          // Lấy hình ảnh từ sale_1.png đến sale_3.png
           String imagePath = 'assets/images/product/sale_${index + 1}.png';
           
           return Container(
@@ -137,11 +148,9 @@ class _HomePageState extends State<HomePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // [SỬA ĐỔI 3]: Cấu trúc lại Stack tổng
                 Stack(
-                  clipBehavior: Clip.none, // Cho phép nút tim nổi hẳn lên
+                  clipBehavior: Clip.none, 
                   children: [
-                    // Khối hình ảnh sản phẩm
                     ClipRRect(
                       borderRadius: BorderRadius.circular(8.0),
                       child: Image.asset(
@@ -153,28 +162,25 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ),
                     
-                    // Tag New hoặc Sale
                     Positioned(
                       top: 8, left: 8,
                       child: isNew
                           ? Stack(
-                              alignment: Alignment.center, // Căn giữa chữ NEW trên ảnh tag
+                              alignment: Alignment.center, 
                               children: [
                                 Image.asset(
                                   'assets/images/button/new_tag.png',
                                   width: 40,
                                   errorBuilder: (context, error, stackTrace) => _buildFallbackTag('NEW', Colors.black),
                                 ),
-                                // [SỬA ĐỔI 2]: Thêm Text "NEW" đè lên ảnh
                                 const Text('NEW', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
                               ],
                             )
                           : _buildFallbackTag('-20%', const Color(0xFFDB3022)),
                     ),
 
-                    // Nút Favorite trái tim góc dưới phải (Đã đưa ra ngoài ClipRRect)
                     Positioned(
-                      bottom: -18, // Chỉnh xuống dưới một chút
+                      bottom: -18, 
                       right: 0,
                       child: Container(
                         padding: const EdgeInsets.all(8),
@@ -190,9 +196,8 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 24), // Đẩy khoảng cách xuống để tránh đè nút thả tim
+                const SizedBox(height: 24), 
                 
-                // Thông tin sản phẩm tĩnh (đợi đổ BE vào)
                 Row(
                   children: List.generate(5, (starIndex) => const Icon(Icons.star, size: 14, color: Color(0xFFFFBA49))),
                 ),
@@ -216,7 +221,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // Tag chữa cháy trong trường hợp ảnh tag bị lỗi
   Widget _buildFallbackTag(String text, Color color) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -231,12 +235,18 @@ class _HomePageState extends State<HomePage> {
         // Khối 1: New Collection
         Container(
           width: double.infinity,
-          height: 350, // [SỬA ĐỔI 4]: Tăng chiều cao lên 350 để hiện rõ khuôn mặt
+          height: 450, // [SỬA ĐỔI 4]: Tăng chiều cao lên 450
           decoration: const BoxDecoration(color: Colors.black),
           child: Stack(
             children: [
-              Image.asset('assets/images/home_page/big_main.png', width: double.infinity, height: 350, fit: BoxFit.cover,
-                 errorBuilder: (context, error, stackTrace) => Container(color: Colors.grey)),
+              Image.asset(
+                'assets/images/home_page/big_main.png', 
+                width: double.infinity, 
+                height: 450, 
+                fit: BoxFit.cover,
+                alignment: Alignment.topCenter, // Ưu tiên giữ lại phần đỉnh (tóc/mặt) của ảnh
+                errorBuilder: (context, error, stackTrace) => Container(color: Colors.grey)
+              ),
               const Positioned(
                 bottom: 20, right: 20,
                 child: Text('New collection', style: TextStyle(color: Colors.white, fontSize: 34, fontWeight: FontWeight.bold)),
@@ -247,7 +257,6 @@ class _HomePageState extends State<HomePage> {
         // Khối 2: Lưới phía dưới
         Row(
           children: [
-            // Cột trái
             Expanded(
               flex: 1,
               child: Column(
@@ -256,7 +265,7 @@ class _HomePageState extends State<HomePage> {
                     height: 150, width: double.infinity, color: Colors.white,
                     alignment: Alignment.centerLeft,
                     padding: const EdgeInsets.only(left: 16),
-                    child: const Text('Summer\nsale', style: TextStyle(color: Color(0xFFDB3022), fontSize: 34, fontWeight: FontWeight.bold)),
+                    child: const Text('Summer\nsale', style: TextStyle(color: Color(0xFFDB3022), fontSize: 34, fontWeight: FontWeight.bold, height: 1.1)),
                   ),
                   Container(
                     height: 150, width: double.infinity, color: Colors.black,
@@ -274,7 +283,6 @@ class _HomePageState extends State<HomePage> {
                 ],
               ),
             ),
-            // Cột phải
             Expanded(
               flex: 1,
               child: Container(
@@ -294,34 +302,43 @@ class _HomePageState extends State<HomePage> {
       currentIndex: _currentIndex,
       onTap: (index) => setState(() => _currentIndex = index),
       type: BottomNavigationBarType.fixed,
-      selectedItemColor: const Color(0xFFDB3022),
-      unselectedItemColor: Colors.grey,
-      showSelectedLabels: true,
-      showUnselectedLabels: true,
-      selectedLabelStyle: const TextStyle(fontSize: 10),
-      unselectedLabelStyle: const TextStyle(fontSize: 10),
+      backgroundColor: Colors.white,
+      showSelectedLabels: false, // [SỬA ĐỔI 1]: Tắt Label để chữ không bị đè lên ảnh
+      showUnselectedLabels: false,
       items: [
+        // [SỬA ĐỔI 2]: Nếu tab được chọn thì dùng ảnh không có bộ lọc (màu gốc). Nếu không chọn thì chuyển xám.
         BottomNavigationBarItem(
-          icon: Image.asset('assets/images/nav_bar/tab1_home.png', width: 24, color: _currentIndex == 0 ? const Color(0xFFDB3022) : Colors.grey, errorBuilder: (context, error, stackTrace) => const Icon(Icons.home_outlined)), 
-          label: 'Home'
+          icon: _buildNavIcon('assets/images/nav_bar/tab1_home.png', 0), 
+          label: ''
         ),
         BottomNavigationBarItem(
-          icon: Image.asset('assets/images/nav_bar/tab2_shop.png', width: 24, color: _currentIndex == 1 ? const Color(0xFFDB3022) : Colors.grey, errorBuilder: (context, error, stackTrace) => const Icon(Icons.shopping_cart_outlined)), 
-          label: 'Shop'
+          icon: _buildNavIcon('assets/images/nav_bar/tab2_shop.png', 1), 
+          label: ''
         ),
         BottomNavigationBarItem(
-          icon: Image.asset('assets/images/nav_bar/tab3_bag.png', width: 24, color: _currentIndex == 2 ? const Color(0xFFDB3022) : Colors.grey, errorBuilder: (context, error, stackTrace) => const Icon(Icons.shopping_bag_outlined)), 
-          label: 'Bag'
+          icon: _buildNavIcon('assets/images/nav_bar/tab3_bag.png', 2), 
+          label: ''
         ),
         BottomNavigationBarItem(
-          icon: Image.asset('assets/images/nav_bar/tab4_favorite.png', width: 24, color: _currentIndex == 3 ? const Color(0xFFDB3022) : Colors.grey, errorBuilder: (context, error, stackTrace) => const Icon(Icons.favorite_outline)), 
-          label: 'Favorites'
+          icon: _buildNavIcon('assets/images/nav_bar/tab4_favorite.png', 3), 
+          label: ''
         ),
         BottomNavigationBarItem(
-          icon: Image.asset('assets/images/nav_bar/tab5_my_profile.png', width: 24, color: _currentIndex == 4 ? const Color(0xFFDB3022) : Colors.grey, errorBuilder: (context, error, stackTrace) => const Icon(Icons.person_outline)), 
-          label: 'Profile'
+          icon: _buildNavIcon('assets/images/nav_bar/tab5_my_profile.png', 4), 
+          label: ''
         ),
       ],
+    );
+  }
+
+  // Hàm hỗ trợ render Icon Navigation Bar
+  Widget _buildNavIcon(String path, int index) {
+    return Image.asset(
+      path,
+      width: 44, // Tăng kích thước chiều rộng ảnh để chữ trong ảnh dễ đọc hơn
+      // Nếu tab này đang được chọn thì color = null (giữ màu gốc của ảnh). Nếu không thì phủ lớp xám.
+      color: _currentIndex == index ? null : Colors.grey,
+      errorBuilder: (context, error, stackTrace) => const Icon(Icons.image_not_supported, color: Colors.grey),
     );
   }
 }
