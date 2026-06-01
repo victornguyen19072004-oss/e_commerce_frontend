@@ -85,7 +85,7 @@ class _LoginPageState extends State<LoginPage> {
               backgroundColor: Colors.green,
             ),
           );
-          // Navigator.pushReplacementNamed(context, '/home'); // Chuyển vào trang chủ
+          Navigator.pushReplacementNamed(context, '/home'); // Chuyển vào trang chủ
         }
       } else {
         _showSnackBar("Không nhận được token xác thực từ máy chủ.");
