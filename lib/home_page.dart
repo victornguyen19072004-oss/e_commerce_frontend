@@ -14,7 +14,6 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF9F9F9),
-      // Bọc toàn bộ nội dung trong SingleChildScrollView để vuốt từ trên xuống dưới
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -51,7 +50,7 @@ class _HomePageState extends State<HomePage> {
       children: [
         // Ảnh nền Banner
         Image.asset(
-          'assets/images/banner/big_banner.png',
+          'assets/images/banner/big_banner.jpg', // Cập nhật đúng đuôi .jpg như đã khai báo trước đó
           width: double.infinity,
           height: 500, // Chiều cao mô phỏng theo Figma
           fit: BoxFit.cover,
@@ -103,7 +102,7 @@ class _HomePageState extends State<HomePage> {
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.center, // [SỬA ĐỔI 1]: Căn giữa theo chiều dọc
         children: [
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -122,9 +121,10 @@ class _HomePageState extends State<HomePage> {
   Widget _buildProductList({required bool isNew}) {
     // Tạm thời hiển thị 3 sản phẩm tĩnh
     return SizedBox(
-      height: 280, // Giới hạn chiều cao cho danh sách trượt ngang
+      height: 300, // [SỬA ĐỔI 5]: Tăng chiều cao để không cắt nút thả tim
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
+        clipBehavior: Clip.none, // Quan trọng: Cho phép nút thả tim tràn ra ngoài khung List
         padding: const EdgeInsets.only(left: 16.0),
         itemCount: 3,
         itemBuilder: (context, index) {
@@ -137,8 +137,11 @@ class _HomePageState extends State<HomePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // [SỬA ĐỔI 3]: Cấu trúc lại Stack tổng
                 Stack(
+                  clipBehavior: Clip.none, // Cho phép nút tim nổi hẳn lên
                   children: [
+                    // Khối hình ảnh sản phẩm
                     ClipRRect(
                       borderRadius: BorderRadius.circular(8.0),
                       child: Image.asset(
@@ -149,29 +152,46 @@ class _HomePageState extends State<HomePage> {
                         errorBuilder: (context, error, stackTrace) => Container(height: 184, width: 150, color: Colors.grey[300]),
                       ),
                     ),
+                    
                     // Tag New hoặc Sale
                     Positioned(
                       top: 8, left: 8,
                       child: isNew
-                          ? Image.asset(
-                              'assets/images/button/new_tag.png',
-                              width: 40,
-                              errorBuilder: (context, error, stackTrace) => _buildFallbackTag('NEW', Colors.black),
+                          ? Stack(
+                              alignment: Alignment.center, // Căn giữa chữ NEW trên ảnh tag
+                              children: [
+                                Image.asset(
+                                  'assets/images/button/new_tag.png',
+                                  width: 40,
+                                  errorBuilder: (context, error, stackTrace) => _buildFallbackTag('NEW', Colors.black),
+                                ),
+                                // [SỬA ĐỔI 2]: Thêm Text "NEW" đè lên ảnh
+                                const Text('NEW', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
+                              ],
                             )
-                          : _buildFallbackTag('-20%', const Color(0xFFDB3022)), // Tag màu đỏ cho hàng Sale
+                          : _buildFallbackTag('-20%', const Color(0xFFDB3022)),
                     ),
-                    // Nút Favorite trái tim góc dưới phải ảnh
+
+                    // Nút Favorite trái tim góc dưới phải (Đã đưa ra ngoài ClipRRect)
                     Positioned(
-                      bottom: -16, right: 0,
+                      bottom: -18, // Chỉnh xuống dưới một chút
+                      right: 0,
                       child: Container(
                         padding: const EdgeInsets.all(8),
-                        decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle, boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4)]),
+                        decoration: const BoxDecoration(
+                          color: Colors.white, 
+                          shape: BoxShape.circle, 
+                          boxShadow: [
+                            BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2))
+                          ]
+                        ),
                         child: const Icon(Icons.favorite_border, size: 16, color: Colors.grey),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 24), // Đẩy khoảng cách xuống để tránh đè nút thả tim
+                
                 // Thông tin sản phẩm tĩnh (đợi đổ BE vào)
                 Row(
                   children: List.generate(5, (starIndex) => const Icon(Icons.star, size: 14, color: Color(0xFFFFBA49))),
@@ -211,11 +231,11 @@ class _HomePageState extends State<HomePage> {
         // Khối 1: New Collection
         Container(
           width: double.infinity,
-          height: 200,
+          height: 350, // [SỬA ĐỔI 4]: Tăng chiều cao lên 350 để hiện rõ khuôn mặt
           decoration: const BoxDecoration(color: Colors.black),
           child: Stack(
             children: [
-              Image.asset('assets/images/home_page/big_main.png', width: double.infinity, height: 200, fit: BoxFit.cover,
+              Image.asset('assets/images/home_page/big_main.png', width: double.infinity, height: 350, fit: BoxFit.cover,
                  errorBuilder: (context, error, stackTrace) => Container(color: Colors.grey)),
               const Positioned(
                 bottom: 20, right: 20,
@@ -270,7 +290,6 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildBottomNavigationBar() {
-    // Tạm dùng Icon mặc định của Flutter nếu bạn chưa cung cấp đủ ảnh tab1->tab5
     return BottomNavigationBar(
       currentIndex: _currentIndex,
       onTap: (index) => setState(() => _currentIndex = index),
@@ -281,12 +300,27 @@ class _HomePageState extends State<HomePage> {
       showUnselectedLabels: true,
       selectedLabelStyle: const TextStyle(fontSize: 10),
       unselectedLabelStyle: const TextStyle(fontSize: 10),
-      items: const [
-        BottomNavigationBarItem(icon: Icon(Icons.home_outlined), activeIcon: Icon(Icons.home), label: 'Home'),
-        BottomNavigationBarItem(icon: Icon(Icons.shopping_cart_outlined), activeIcon: Icon(Icons.shopping_cart), label: 'Shop'),
-        BottomNavigationBarItem(icon: Icon(Icons.shopping_bag_outlined), activeIcon: Icon(Icons.shopping_bag), label: 'Bag'),
-        BottomNavigationBarItem(icon: Icon(Icons.favorite_outline), activeIcon: Icon(Icons.favorite), label: 'Favorites'),
-        BottomNavigationBarItem(icon: Icon(Icons.person_outline), activeIcon: Icon(Icons.person), label: 'Profile'),
+      items: [
+        BottomNavigationBarItem(
+          icon: Image.asset('assets/images/nav_bar/tab1_home.png', width: 24, color: _currentIndex == 0 ? const Color(0xFFDB3022) : Colors.grey, errorBuilder: (context, error, stackTrace) => const Icon(Icons.home_outlined)), 
+          label: 'Home'
+        ),
+        BottomNavigationBarItem(
+          icon: Image.asset('assets/images/nav_bar/tab2_shop.png', width: 24, color: _currentIndex == 1 ? const Color(0xFFDB3022) : Colors.grey, errorBuilder: (context, error, stackTrace) => const Icon(Icons.shopping_cart_outlined)), 
+          label: 'Shop'
+        ),
+        BottomNavigationBarItem(
+          icon: Image.asset('assets/images/nav_bar/tab3_bag.png', width: 24, color: _currentIndex == 2 ? const Color(0xFFDB3022) : Colors.grey, errorBuilder: (context, error, stackTrace) => const Icon(Icons.shopping_bag_outlined)), 
+          label: 'Bag'
+        ),
+        BottomNavigationBarItem(
+          icon: Image.asset('assets/images/nav_bar/tab4_favorite.png', width: 24, color: _currentIndex == 3 ? const Color(0xFFDB3022) : Colors.grey, errorBuilder: (context, error, stackTrace) => const Icon(Icons.favorite_outline)), 
+          label: 'Favorites'
+        ),
+        BottomNavigationBarItem(
+          icon: Image.asset('assets/images/nav_bar/tab5_my_profile.png', width: 24, color: _currentIndex == 4 ? const Color(0xFFDB3022) : Colors.grey, errorBuilder: (context, error, stackTrace) => const Icon(Icons.person_outline)), 
+          label: 'Profile'
+        ),
       ],
     );
   }
