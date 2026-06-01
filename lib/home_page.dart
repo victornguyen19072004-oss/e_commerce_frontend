@@ -89,7 +89,7 @@ class _HomePageState extends State<HomePage> {
               _isLoadingNew
                   ? const SizedBox(height: 200, child: Center(child: CircularProgressIndicator(color: Color(0xFFDB3022))))
                   : _buildProductList(products: _newProducts, isNew: true),
-              const SizedBox(height: 16), // [SỬA ĐỔI 1]: Đẩy mục Sale lên gần mục New hơn (trước là 32)
+              const SizedBox(height: 3), // [SỬA ĐỔI 1]: Đẩy mục Sale lên gần mục New hơn (trước là 32)
               _buildSectionHeader('Sale', 'Super summer sale'),
               const SizedBox(height: 16),
               _isLoadingSale
