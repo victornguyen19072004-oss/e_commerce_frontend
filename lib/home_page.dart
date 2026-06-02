@@ -88,35 +88,33 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildMain3Grid() {
     return Column(children: [
-      // 1. Big Main Image
-      _buildGridItem('assets/images/home_page/big_main.png', 'New collection', 500, isRight: true, isHeading: true),
-      
-      // 2. Row chia cột
+      _buildGridItem('assets/images/home_page/big_main.png', 'New collection', 400, isRight: true, isHeading: true),
       SizedBox(
         height: 300,
         child: Row(children: [
-          // Cột trái: 2 ngăn dọc
           Expanded(child: Column(children: [
-            Expanded(child: _buildGridItem('assets/images/home_page/summer_sale.png', 'Summer sale', 150, isRedTitle: true)),
+            // Summer sale: hiển thị dọc
+            Expanded(child: _buildGridItem('assets/images/home_page/summer_sale.png', 'Summer\nsale', 150, isRedTitle: true, isVerticalTitle: true)),
             Expanded(child: _buildGridItem('assets/images/home_page/main_2.png', 'Black', 150)),
           ])),
-          // Cột phải: main_3.png
-          Expanded(child: _buildGridItem('assets/images/home_page/main_3.png', "Men's hoodies", 300)),
+          // main_3: Bỏ title ("")
+          Expanded(child: _buildGridItem('assets/images/home_page/main_3.png', "", 300)),
         ]),
       ),
     ]);
   }
 
-  Widget _buildGridItem(String path, String title, double height, {bool isRight = false, bool isHeading = false, bool isRedTitle = false}) {
+  Widget _buildGridItem(String path, String title, double height, {bool isRight = false, bool isHeading = false, bool isRedTitle = false, bool isVerticalTitle = false}) {
     return Container(height: height, width: double.infinity, 
-      decoration: BoxDecoration(color: Colors.grey[300], image: DecorationImage(image: AssetImage(path), fit: BoxFit.cover)),
+      decoration: BoxDecoration(color: Colors.white, image: DecorationImage(image: AssetImage(path), fit: BoxFit.cover)),
       child: Container(
         padding: const EdgeInsets.all(20),
-        alignment: isRight ? Alignment.bottomRight : Alignment.bottomLeft,
+        alignment: isRight ? Alignment.bottomRight : (isVerticalTitle ? Alignment.topLeft : Alignment.bottomLeft),
         child: Text(title, style: TextStyle(
           color: isRedTitle ? const Color(0xFFDB3022) : Colors.white, 
           fontSize: isHeading ? 34 : 24, 
-          fontWeight: FontWeight.bold
+          fontWeight: FontWeight.bold,
+          height: 1.1
         )),
       ),
     );
