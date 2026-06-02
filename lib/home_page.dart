@@ -71,11 +71,11 @@ class _HomePageState extends State<HomePage> {
                   ? const SizedBox(height: 200, child: Center(child: CircularProgressIndicator(color: Color(0xFFDB3022))))
                   : _buildProductList(products: _newProducts, isNew: true),
               
-              // Đẩy Section Sale sát vào list NEW bằng cách loại bỏ SizedBox phía trên
               _buildSectionHeader('Sale', 'Super summer sale'),
               _isLoadingSale
                   ? const SizedBox(height: 200, child: Center(child: CircularProgressIndicator(color: Color(0xFFDB3022))))
                   : _buildProductList(products: _saleProducts, isNew: false),
+              
               const SizedBox(height: 32),
               _buildMain3Grid(),
             ],
@@ -86,67 +86,69 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildProductList({required List<dynamic> products, required bool isNew}) {
-    return SizedBox(
-      height: 240, // Giảm chiều cao xuống để sát hơn
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        clipBehavior: Clip.none,
-        padding: const EdgeInsets.only(left: 16.0, top: 16.0),
-        itemCount: products.length,
-        itemBuilder: (context, index) {
-          final product = products[index];
-          String name = product['productName'] ?? '';
-          String path = _imageMap[name] ?? 'assets/images/product/ao_thun.jpg';
-          double sale = double.tryParse(product['salePrice'].toString()) ?? 0.0;
-          double compare = double.tryParse(product['comparePrice'].toString()) ?? 0.0;
-          String discount = (compare > sale) ? "-${(((compare - sale) / compare) * 100).round()}%" : "-20%";
+  Widget _buildMain3Grid() {
+    return Column(children: [
+      // 1. Big Main Image
+      _buildGridItem('assets/images/home_page/big_main.png', 'New collection', 500, isRight: true, isHeading: true),
+      
+      // 2. Row chia cột
+      SizedBox(
+        height: 300,
+        child: Row(children: [
+          // Cột trái: 2 ngăn dọc
+          Expanded(child: Column(children: [
+            Expanded(child: _buildGridItem('assets/images/home_page/summer_sale.png', 'Summer sale', 150, isRedTitle: true)),
+            Expanded(child: _buildGridItem('assets/images/home_page/main_2.png', 'Black', 150)),
+          ])),
+          // Cột phải: main_3.png
+          Expanded(child: _buildGridItem('assets/images/home_page/main_3.png', "Men's hoodies", 300)),
+        ]),
+      ),
+    ]);
+  }
 
-          return Container(
-            width: 140, margin: const EdgeInsets.only(right: 16.0),
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Stack(clipBehavior: Clip.none, children: [
-                ClipRRect(borderRadius: BorderRadius.circular(8.0), child: Image.asset(path, height: 160, width: 140, fit: BoxFit.cover)),
-                Positioned(top: 8, left: 8, child: isNew ? _buildTag("NEW", Colors.black) : _buildTag(discount, const Color(0xFFDB3022))),
-              ]),
-              const SizedBox(height: 8),
-              Text(name, style: const TextStyle(fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
-              Text('${sale.round()}\$', style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFDB3022))),
-            ]),
-          );
-        },
+  Widget _buildGridItem(String path, String title, double height, {bool isRight = false, bool isHeading = false, bool isRedTitle = false}) {
+    return Container(height: height, width: double.infinity, 
+      decoration: BoxDecoration(color: Colors.grey[300], image: DecorationImage(image: AssetImage(path), fit: BoxFit.cover)),
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        alignment: isRight ? Alignment.bottomRight : Alignment.bottomLeft,
+        child: Text(title, style: TextStyle(
+          color: isRedTitle ? const Color(0xFFDB3022) : Colors.white, 
+          fontSize: isHeading ? 34 : 24, 
+          fontWeight: FontWeight.bold
+        )),
       ),
     );
   }
 
-  Widget _buildMain3Grid() {
-    return Column(children: [
-      _buildGridItem('assets/images/home_page/big_main.png', 'New collection', 250),
-      Row(children: [
-        Expanded(child: _buildGridItem('assets/images/home_page/main_3.png', "Men's hoodies", 150)),
-        Expanded(child: _buildGridItem('assets/images/home_page/main_2.png', 'Black', 150)),
-      ]),
-      _buildGridItem('assets/images/home_page/summer_sale.png', 'Summer sale', 200),
-    ]);
+  Widget _buildProductList({required List<dynamic> products, required bool isNew}) {
+    return SizedBox(height: 240, child: ListView.builder(
+      scrollDirection: Axis.horizontal, padding: const EdgeInsets.only(left: 16.0, top: 16.0),
+      itemCount: products.length,
+      itemBuilder: (context, index) {
+        final product = products[index];
+        String name = product['productName'] ?? '';
+        String path = _imageMap[name] ?? 'assets/images/product/ao_thun.jpg';
+        double sale = double.tryParse(product['salePrice'].toString()) ?? 0.0;
+        double compare = double.tryParse(product['comparePrice'].toString()) ?? 0.0;
+        String discount = (compare > sale) ? "-${(((compare - sale) / compare) * 100).round()}%" : "-20%";
+
+        return Container(width: 140, margin: const EdgeInsets.only(right: 16.0), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Stack(clipBehavior: Clip.none, children: [
+            ClipRRect(borderRadius: BorderRadius.circular(8.0), child: Image.asset(path, height: 160, width: 140, fit: BoxFit.cover)),
+            Positioned(top: 8, left: 8, child: isNew ? _buildTag("NEW", Colors.black) : _buildTag(discount, const Color(0xFFDB3022))),
+          ]),
+          const SizedBox(height: 8),
+          Text(name, style: const TextStyle(fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
+          Text('${sale.round()}\$', style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFDB3022))),
+        ]));
+      },
+    ));
   }
 
-  Widget _buildGridItem(String path, String title, double height) {
-    return Container(height: height, width: double.infinity, margin: const EdgeInsets.all(4), color: Colors.grey[300], 
-      child: Stack(children: [
-        Positioned.fill(child: Image.asset(path, fit: BoxFit.cover, errorBuilder: (_,__,___)=> Container(color: Colors.black))),
-        Positioned(bottom: 20, left: 20, child: Text(title, style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)))
-      ]));
-  }
-
-  Widget _buildTag(String text, Color color) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-    decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(12)),
-    child: Text(text, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11)),
-  );
-
+  Widget _buildTag(String text, Color color) => Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4), decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(12)), child: Text(text, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11)));
   Widget _buildBanner() => Stack(children: [Image.asset('assets/images/banner/big_banner.png', width: double.infinity, height: 500, fit: BoxFit.cover)]);
-
-  Widget _buildSectionHeader(String title, String subtitle) => Padding(padding: const EdgeInsets.symmetric(horizontal: 16.0), child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(title, style: const TextStyle(fontSize: 34, fontWeight: FontWeight.bold)), Text(subtitle, style: const TextStyle(fontSize: 11, color: Colors.grey))]), const Text('View all')]));
-
+  Widget _buildSectionHeader(String title, String subtitle) => Padding(padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0), child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(title, style: const TextStyle(fontSize: 34, fontWeight: FontWeight.bold)), Text(subtitle, style: const TextStyle(fontSize: 11, color: Colors.grey))]), const Text('View all')]));
   Widget _buildBottomNavigationBar() => BottomNavigationBar(currentIndex: _currentIndex, onTap: (idx) => setState(() => _currentIndex = idx), selectedItemColor: const Color(0xFFDB3022), unselectedItemColor: Colors.grey, items: const [BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'), BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: 'Shop'), BottomNavigationBarItem(icon: Icon(Icons.shopping_bag), label: 'Bag'), BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Favorites'), BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile')]);
 }
