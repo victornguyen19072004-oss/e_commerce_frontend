@@ -109,7 +109,7 @@ class _HomePageState extends State<HomePage> {
       decoration: BoxDecoration(color: Colors.white, image: DecorationImage(image: AssetImage(path), fit: BoxFit.cover)),
       child: Container(
         padding: const EdgeInsets.all(20),
-        alignment: isRight ? Alignment.bottomRight : (isVerticalTitle ? Alignment.topLeft : Alignment.bottomLeft),
+        alignment: isRight ? Alignment.bottomRight : (isVerticalTitle ? Alignment.centerLeft : Alignment.bottomLeft),
         child: Text(title, style: TextStyle(
           color: isRedTitle ? const Color(0xFFDB3022) : Colors.white, 
           fontSize: isHeading ? 34 : 24, 
