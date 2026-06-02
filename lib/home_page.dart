@@ -34,10 +34,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _loadAllProducts() async {
-    await Future.wait([
-      _fetchProductsByTag('NEW'),
-      _fetchProductsByTag('SALE'),
-    ]);
+    await Future.wait([_fetchProductsByTag('NEW'), _fetchProductsByTag('SALE')]);
   }
 
   Future<void> _fetchProductsByTag(String tagName) async {
@@ -46,21 +43,12 @@ class _HomePageState extends State<HomePage> {
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(utf8.decode(response.bodyBytes));
         setState(() {
-          if (tagName == 'NEW') {
-            _newProducts = data;
-            _isLoadingNew = false;
-          } else {
-            _saleProducts = data;
-            _isLoadingSale = false;
-          }
+          if (tagName == 'NEW') { _newProducts = data; _isLoadingNew = false; } 
+          else { _saleProducts = data; _isLoadingSale = false; }
         });
       }
     } catch (e) {
-      debugPrint("Lỗi tải sản phẩm: $e");
-      setState(() {
-        if (tagName == 'NEW') _isLoadingNew = false;
-        if (tagName == 'SALE') _isLoadingSale = false;
-      });
+      setState(() { _isLoadingNew = false; _isLoadingSale = false; });
     }
   }
 
@@ -70,28 +58,21 @@ class _HomePageState extends State<HomePage> {
       backgroundColor: const Color(0xFFF9F9F9),
       body: RefreshIndicator(
         color: const Color(0xFFDB3022),
-        onRefresh: () async {
-          setState(() {
-            _isLoadingNew = true;
-            _isLoadingSale = true;
-          });
-          await _loadAllProducts();
-        },
+        onRefresh: () async => await _loadAllProducts(),
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildBanner(),
-              const SizedBox(height: 24), // Thu hẹp từ 32 xuống 24
+              const SizedBox(height: 24),
               _buildSectionHeader('New', 'You’ve never seen it before!'),
-              const SizedBox(height: 16),
               _isLoadingNew
                   ? const SizedBox(height: 200, child: Center(child: CircularProgressIndicator(color: Color(0xFFDB3022))))
                   : _buildProductList(products: _newProducts, isNew: true),
-              const SizedBox(height: 0), // [SỬA ĐỔI 1]: Đẩy mục Sale lên gần mục New hơn (trước là 32)
+              
+              // Đẩy Section Sale sát vào list NEW bằng cách loại bỏ SizedBox phía trên
               _buildSectionHeader('Sale', 'Super summer sale'),
-              const SizedBox(height: 16),
               _isLoadingSale
                   ? const SizedBox(height: 200, child: Center(child: CircularProgressIndicator(color: Color(0xFFDB3022))))
                   : _buildProductList(products: _saleProducts, isNew: false),
@@ -105,86 +86,67 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // Component nhãn bo góc [SỬA ĐỔI 2]
-  Widget _buildTag(String text, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(12), // Bo góc cho nhãn
-      ),
-      child: Text(text, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11)),
-    );
-  }
-
   Widget _buildProductList({required List<dynamic> products, required bool isNew}) {
     return SizedBox(
-      height: 300,
+      height: 240, // Giảm chiều cao xuống để sát hơn
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         clipBehavior: Clip.none,
-        padding: const EdgeInsets.only(left: 16.0),
+        padding: const EdgeInsets.only(left: 16.0, top: 16.0),
         itemCount: products.length,
         itemBuilder: (context, index) {
           final product = products[index];
-          String productName = product['productName'] ?? '';
-          String imagePath = _imageMap[productName] ?? 'assets/images/product/ao_thun.jpg';
-
-          double salePrice = double.tryParse(product['salePrice'].toString()) ?? 0.0;
-          double comparePrice = double.tryParse(product['comparePrice'].toString()) ?? 0.0;
-          String discount = (comparePrice > salePrice) ? "-${(((comparePrice - salePrice) / comparePrice) * 100).round()}%" : "-20%";
+          String name = product['productName'] ?? '';
+          String path = _imageMap[name] ?? 'assets/images/product/ao_thun.jpg';
+          double sale = double.tryParse(product['salePrice'].toString()) ?? 0.0;
+          double compare = double.tryParse(product['comparePrice'].toString()) ?? 0.0;
+          String discount = (compare > sale) ? "-${(((compare - sale) / compare) * 100).round()}%" : "-20%";
 
           return Container(
-            width: 150, margin: const EdgeInsets.only(right: 16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(8.0),
-                      child: Image.asset(imagePath, height: 184, width: 150, fit: BoxFit.cover),
-                    ),
-                    Positioned(
-                      top: 8, left: 8,
-                      child: isNew ? _buildTag("NEW", Colors.black) : _buildTag(discount, const Color(0xFFDB3022)),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Text(productName, style: const TextStyle(fontWeight: FontWeight.bold)),
-                Row(
-                  children: [
-                    if (!isNew && comparePrice > salePrice) Text('${comparePrice.round()}\$', style: const TextStyle(decoration: TextDecoration.lineThrough, color: Colors.grey)),
-                    Text(' ${salePrice.round()}\$', style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFDB3022))),
-                  ],
-                ),
-              ],
-            ),
+            width: 140, margin: const EdgeInsets.only(right: 16.0),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Stack(clipBehavior: Clip.none, children: [
+                ClipRRect(borderRadius: BorderRadius.circular(8.0), child: Image.asset(path, height: 160, width: 140, fit: BoxFit.cover)),
+                Positioned(top: 8, left: 8, child: isNew ? _buildTag("NEW", Colors.black) : _buildTag(discount, const Color(0xFFDB3022))),
+              ]),
+              const SizedBox(height: 8),
+              Text(name, style: const TextStyle(fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
+              Text('${sale.round()}\$', style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFDB3022))),
+            ]),
           );
         },
       ),
     );
   }
 
-  // Các Widget còn lại giữ nguyên để đảm bảo cấu trúc không đổi
-  Widget _buildBanner() {
-    return Stack(children: [
-      Image.asset('assets/images/banner/big_banner.png', width: double.infinity, height: 500, fit: BoxFit.cover),
-      Positioned(bottom: 30, left: 16, child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Image.asset('assets/images/banner/fashion_title.png', width: 200), const SizedBox(height: 16), SizedBox(width: 160, height: 36, child: ElevatedButton(onPressed: () {}, style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFDB3022), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25))), child: const Text('Check', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold))))]))
+  Widget _buildMain3Grid() {
+    return Column(children: [
+      _buildGridItem('assets/images/home_page/big_main.png', 'New collection', 250),
+      Row(children: [
+        Expanded(child: _buildGridItem('assets/images/home_page/main_3.png', "Men's hoodies", 150)),
+        Expanded(child: _buildGridItem('assets/images/home_page/main_2.png', 'Black', 150)),
+      ]),
+      _buildGridItem('assets/images/home_page/summer_sale.png', 'Summer sale', 200),
     ]);
   }
 
-  Widget _buildSectionHeader(String title, String subtitle) {
-    return Padding(padding: const EdgeInsets.symmetric(horizontal: 16.0), child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(title, style: const TextStyle(fontSize: 34, fontWeight: FontWeight.bold, color: Colors.black)), Text(subtitle, style: const TextStyle(fontSize: 11, color: Colors.grey))]), const Text('View all', style: TextStyle(fontSize: 11, color: Colors.black))]));
+  Widget _buildGridItem(String path, String title, double height) {
+    return Container(height: height, width: double.infinity, margin: const EdgeInsets.all(4), color: Colors.grey[300], 
+      child: Stack(children: [
+        Positioned.fill(child: Image.asset(path, fit: BoxFit.cover, errorBuilder: (_,__,___)=> Container(color: Colors.black))),
+        Positioned(bottom: 20, left: 20, child: Text(title, style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)))
+      ]));
   }
 
-  Widget _buildMain3Grid() {
-    return Column(children: [Container(height: 450, color: Colors.black, width: double.infinity, child: Image.asset('assets/images/home_page/big_main.png', fit: BoxFit.cover)), Row(children: [Expanded(child: Column(children: [Container(height: 150, color: Colors.white), Container(height: 150, color: Colors.black)])), Expanded(child: Container(height: 300, color: Colors.black))])]);
-  }
+  Widget _buildTag(String text, Color color) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+    decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(12)),
+    child: Text(text, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11)),
+  );
 
-  Widget _buildBottomNavigationBar() {
-    return BottomNavigationBar(currentIndex: _currentIndex, onTap: (index) => setState(() => _currentIndex = index), selectedItemColor: const Color(0xFFDB3022), unselectedItemColor: Colors.grey, items: const [BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'), BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: 'Shop'), BottomNavigationBarItem(icon: Icon(Icons.shopping_bag), label: 'Bag'), BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Favorites'), BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile')]);
-  }
+  Widget _buildBanner() => Stack(children: [Image.asset('assets/images/banner/big_banner.png', width: double.infinity, height: 500, fit: BoxFit.cover)]);
+
+  Widget _buildSectionHeader(String title, String subtitle) => Padding(padding: const EdgeInsets.symmetric(horizontal: 16.0), child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(title, style: const TextStyle(fontSize: 34, fontWeight: FontWeight.bold)), Text(subtitle, style: const TextStyle(fontSize: 11, color: Colors.grey))]), const Text('View all')]));
+
+  Widget _buildBottomNavigationBar() => BottomNavigationBar(currentIndex: _currentIndex, onTap: (idx) => setState(() => _currentIndex = idx), selectedItemColor: const Color(0xFFDB3022), unselectedItemColor: Colors.grey, items: const [BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'), BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: 'Shop'), BottomNavigationBarItem(icon: Icon(Icons.shopping_bag), label: 'Bag'), BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Favorites'), BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile')]);
 }
