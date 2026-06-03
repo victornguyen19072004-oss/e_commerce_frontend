@@ -5,7 +5,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart'; // Import Facebook Auth
 import 'services/auth_service.dart';
 import '../config/google_config.dart';
-
+import 'home_page.dart';
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
 
@@ -134,7 +134,7 @@ class _LoginPageState extends State<LoginPage> {
               backgroundColor: Colors.green,
             ),
           );
-          // Navigator.pushReplacementNamed(context, '/home');
+          Navigator.pushReplacementNamed(context, '/home');
         }
       }
     } catch (e) {
@@ -176,7 +176,7 @@ class _LoginPageState extends State<LoginPage> {
                 backgroundColor: Colors.green,
               ),
             );
-            // Navigator.pushReplacementNamed(context, '/home');
+            Navigator.pushReplacementNamed(context, '/home');
           }
         }
       } else if (fbResult.status == LoginStatus.cancelled) {
