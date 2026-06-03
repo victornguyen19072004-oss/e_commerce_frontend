@@ -54,12 +54,13 @@ class EcommerceApp extends StatelessWidget {
       // builder: DevicePreview.appBuilder,
 
       // Đặt initialRoute là /signup để chạy thẳng vào màn hình Đăng ký
-      initialRoute: '/signup',
+      // initialRoute: '/signup',
+      initialRoute: '/home',
       routes: {
         '/home': (context) => const HomePage(),
-        '/login': (context) => const LoginPage(),
-        '/signup': (context) => const SignUpPage(),
-        '/forgot': (context) => const ForgotPasswordPage(),
+        // '/login': (context) => const LoginPage(),
+        // '/signup': (context) => const SignUpPage(),
+        // '/forgot': (context) => const ForgotPasswordPage(),
       },
     );
   }
