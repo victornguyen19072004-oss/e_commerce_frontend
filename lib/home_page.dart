@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'shop_page.dart';
+
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
 
@@ -16,16 +17,88 @@ class _HomePageState extends State<HomePage> {
   bool _isLoadingNew = true;
   bool _isLoadingSale = true;
 
-  final String _baseUrl =
-      "https://ecommerce-backend-8wur.onrender.com/api/products";
+  final String _baseUrl = "https://ecommerce-backend-8wur.onrender.com/api/products";
 
+  // Ánh xạ đầy đủ tất cả sản phẩm
   final Map<String, String> _imageMap = {
+    // --- CÁC SẢN PHẨM CŨ ---
     "Áo Thun Nam Mùa Hè": "assets/images/product/ao_thun.jpg",
     "Evening Dress Premium": "assets/images/product/evening_dress.jfif",
     "Giày Thể Thao Classic": "assets/images/product/giay_nike.jfif",
     "Kính Mát Thời Trang": "assets/images/product/kinh_mat.jpg",
     "Quần Jeans Ống Rộng": "assets/images/product/quan_jean.jpg",
     "Túi Xách Da Đeo Chéo": "assets/images/product/tui_xach.jfif",
+
+    // --- CÁC SẢN PHẨM MỚI (50 MÓN) ---
+    // 1. Shirts & Blouses
+    "Áo Sơ Mi Lụa Cổ V": "assets/images/categories/shirts_blouses/shirt_v.jfif",
+    "Áo Blouse Công Sở Tay Bồng": "assets/images/categories/shirts_blouses/blouse_office.jfif",
+    "Áo Sơ Mi Kẻ Sọc Form Rộng": "assets/images/categories/shirts_blouses/shirt_caro.jfif",
+    "Áo Blouse Trễ Vai Họa Tiết": "assets/images/categories/shirts_blouses/blouse_pattern.jfif",
+    "Áo Sơ Mi Trắng Basic": "assets/images/categories/shirts_blouses/shirt_classic.jfif",
+
+    // 2. Cardigans & Sweaters
+    "Áo Cardigan Dáng Dài": "assets/images/categories/cardigans_sweaters/cardigan_long.jfif",
+    "Áo Len Cổ Lọ Ấm Áp": "assets/images/categories/cardigans_sweaters/sweater_warm.jfif",
+    "Áo Cardigan Len Thừng": "assets/images/categories/cardigans_sweaters/cardigan_len.jfif",
+    "Áo Len Gân Cổ V": "assets/images/categories/cardigans_sweaters/sweater_v.jfif",
+    "Áo Khoác Len Mỏng Mùa Thu": "assets/images/categories/cardigans_sweaters/sweater_fall.jfif",
+
+    // 3. Knitwear
+    "Áo Dệt Kim Tay Ngắn": "assets/images/categories/knitwear/ao_det_kim.jfif",
+    "Đầm Dệt Kim Ôm Body": "assets/images/categories/knitwear/dam_det_kim.jfif",
+    "Áo Khoác Dệt Kim Cài Nút": "assets/images/categories/knitwear/ao_khoac_det_kim.jfif",
+    "Chân Váy Len Dệt Kim": "assets/images/categories/knitwear/chan_vay_len.jfif",
+    "Set Bộ Dệt Kim Thanh Lịch": "assets/images/categories/knitwear/set_bo_det_kim.jfif",
+
+    // 4. Blazers
+    "Áo Blazer Nữ Đen Classic": "assets/images/categories/blazers/ao_blazer.jfif",
+    "Blazer Kẻ Caro Trẻ Trung": "assets/images/categories/blazers/blazer_caro.jfif",
+    "Áo Blazer Pastel Dáng Suông": "assets/images/categories/blazers/blazer_pastel.jfif",
+    "Blazer Ngắn Tay Mùa Hè": "assets/images/categories/blazers/blazer_fall.jfif",
+    "Áo Khoác Blazer Kaki": "assets/images/categories/blazers/blazer_kaki.jfif",
+
+    // 5. Outerwear
+    "Áo Khoác Dạ Dáng Dài": "assets/images/categories/outerwear/outerwear_long.jfif",
+    "Áo Phao Dáng Ngắn": "assets/images/categories/outerwear/phao_ngan.jfif",
+    "Áo Khoác Da Biker": "assets/images/categories/outerwear/khoac_biker.jfif",
+    "Áo Khoác Bomber Năng Động": "assets/images/categories/outerwear/khoac_bomber.jfif",
+    "Áo Măng Tô Kaki": "assets/images/categories/outerwear/mang_to_kaki.jfif",
+
+    // 6. Pants
+    "Quần Tây Công Sở Dáng Đứng": "assets/images/categories/pants/pant_office.jfif",
+    "Quần Ống Suông Vải Mềm": "assets/images/categories/pants/pant_ong_suong.jfif",
+    "Quần Kaki Nữ Năng Động": "assets/images/categories/pants/pant_kaki.jfif",
+    "Quần Baggy Lưng Cao": "assets/images/categories/pants/pant_baggy.jfif",
+    "Quần Thể Thao Jogger": "assets/images/categories/pants/pant_jogger.jfif",
+
+    // 7. Jeans
+    "Quần Jeans Skinny Xanh Đậm": "assets/images/categories/jeans/jean_skinny.jfif",
+    "Quần Jeans Ống Loe Retro": "assets/images/categories/jeans/jean_retro.jfif",
+    "Quần Jeans Rách Phá Cách": "assets/images/categories/jeans/jean_rach.jfif",
+    "Quần Mom Jeans Lưng Cao": "assets/images/categories/jeans/jean_mom.jfif",
+    "Quần Shorts Jeans Gấu Tua Rua": "assets/images/categories/jeans/jean_short.jfif",
+
+    // 8. Shorts
+    "Quần Short Kaki Cơ Bản": "assets/images/categories/shorts/short_kaki.jfif",
+    "Quần Short Vải Linen Mùa Hè": "assets/images/categories/shorts/short_linen.jfif",
+    "Quần Short Thể Thao Cotton": "assets/images/categories/shorts/short_cotton.jfif",
+    "Quần Giả Váy Xếp Ly": "assets/images/categories/shorts/short_vay.jfif",
+    "Quần Short Da Thời Trang": "assets/images/categories/shorts/short_da.jfif",
+
+    // 9. Skirts
+    "Chân Váy Chữ A Công Sở": "assets/images/categories/skirts/skirt_A.jfif",
+    "Chân Váy Midi Xếp Ly": "assets/images/categories/skirts/skirt_midi.jfif",
+    "Chân Váy Hoa Nhí Dáng Dài": "assets/images/categories/skirts/skirt_flower.jfif",
+    "Chân Váy Jean Ngắn": "assets/images/categories/skirts/skirt_jean.jfif",
+    "Chân Váy Bút Chì Ôm Dáng": "assets/images/categories/skirts/skirt_pencil.jfif",
+
+    // 10. Dresses
+    "Đầm Maxi Trễ Vai Đi Biển": "assets/images/categories/dresses/dress_maxi.jfif",
+    "Váy Xòe Họa Tiết Hoa Nhí": "assets/images/categories/dresses/dress_flowerl.jfif",
+    "Đầm Body Cổ V Gợi Cảm": "assets/images/categories/dresses/dress_body.jfif",
+    "Váy Sơ Mi Thắt Eo": "assets/images/categories/dresses/dress_shirt.jfif",
+    "Đầm Dự Tiệc Dáng Dài Xẻ Tà": "assets/images/categories/dresses/dress_wedding.jfif",
   };
 
   @override
@@ -84,7 +157,7 @@ class _HomePageState extends State<HomePage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildBanner(),
-              const SizedBox(height: 24), // Thu hẹp từ 32 xuống 24
+              const SizedBox(height: 24),
               _buildSectionHeader('New', 'You’ve never seen it before!'),
               const SizedBox(height: 16),
               _isLoadingNew
@@ -97,9 +170,7 @@ class _HomePageState extends State<HomePage> {
                       ),
                     )
                   : _buildProductList(products: _newProducts, isNew: true),
-              const SizedBox(
-                height: 16,
-              ), // [SỬA ĐỔI 1]: Đẩy mục Sale lên gần mục New hơn (trước là 32)
+              const SizedBox(height: 16),
               _buildSectionHeader('Sale', 'Super summer sale'),
               const SizedBox(height: 16),
               _isLoadingSale
@@ -122,13 +193,12 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // Component nhãn bo góc [SỬA ĐỔI 2]
   Widget _buildTag(String text, Color color) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
         color: color,
-        borderRadius: BorderRadius.circular(12), // Bo góc cho nhãn
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
         text,
@@ -155,14 +225,15 @@ class _HomePageState extends State<HomePage> {
         itemBuilder: (context, index) {
           final product = products[index];
           String productName = product['productName'] ?? '';
-          String imagePath =
-              _imageMap[productName] ?? 'assets/images/product/ao_thun.jpg';
+          
+          // Lấy đúng ảnh theo Map, nếu không có lấy ảnh mặc định
+          String imagePath = _imageMap[productName] ?? 'assets/images/product/ao_thun.jpg';
 
           double salePrice =
               double.tryParse(product['salePrice'].toString()) ?? 0.0;
           double comparePrice =
               double.tryParse(product['comparePrice'].toString()) ?? 0.0;
-          String discount = (comparePrice > salePrice)
+          String discount = (comparePrice > salePrice && comparePrice > 0)
               ? "-${(((comparePrice - salePrice) / comparePrice) * 100).round()}%"
               : "-20%";
 
@@ -182,6 +253,12 @@ class _HomePageState extends State<HomePage> {
                         height: 184,
                         width: 150,
                         fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => Container(
+                          height: 184,
+                          width: 150,
+                          color: Colors.grey[300],
+                          child: const Icon(Icons.image, color: Colors.grey),
+                        ),
                       ),
                     ),
                     Positioned(
@@ -197,6 +274,8 @@ class _HomePageState extends State<HomePage> {
                 Text(
                   productName,
                   style: const TextStyle(fontWeight: FontWeight.bold),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 Row(
                   children: [
@@ -208,8 +287,10 @@ class _HomePageState extends State<HomePage> {
                           color: Colors.grey,
                         ),
                       ),
+                    if (!isNew && comparePrice > salePrice)
+                      const SizedBox(width: 4),
                     Text(
-                      ' ${salePrice.round()}\$',
+                      '${salePrice.round()}\$',
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         color: Color(0xFFDB3022),
@@ -225,7 +306,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // Các Widget còn lại giữ nguyên để đảm bảo cấu trúc không đổi
   Widget _buildBanner() {
     return Stack(
       children: [
