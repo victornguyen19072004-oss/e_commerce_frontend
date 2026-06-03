@@ -155,7 +155,7 @@ class _LoginPageState extends State<LoginPage> {
                   backgroundColor: Colors.green,
                ),
              );
-             // Navigator.pushReplacementNamed(context, '/home');
+             Navigator.pushReplacementNamed(context, '/home');
           }
         }
      } catch (e) {
@@ -202,7 +202,7 @@ class _LoginPageState extends State<LoginPage> {
                     backgroundColor: Colors.green,
                   ),
                );
-               // Navigator.pushReplacementNamed(context, '/home');
+               Navigator.pushReplacementNamed(context, '/home');
              }
           }
         } else if (fbResult.status == LoginStatus.cancelled) {
