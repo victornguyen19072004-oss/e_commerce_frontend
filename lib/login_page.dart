@@ -302,3 +302,12 @@ class _LoginPageState extends State<LoginPage> {
   Widget _buildSocialButton(String assetPath, {bool isRounded = false}) {
     return Container(
       width: 92, height: 64,
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8)]),
+      child: Center(
+        child: isRounded
+            ? ClipRRect(borderRadius: BorderRadius.circular(4.0), child: Image.asset(assetPath, width: 24, height: 24, fit: BoxFit.cover))
+            : Image.asset(assetPath, width: 24, height: 24, errorBuilder: (context, error, stackTrace) => Icon(assetPath.contains('google') ? Icons.g_mobiledata : Icons.facebook, size: 32, color: Colors.grey)),
+      ),
+    );
+  }
+}
