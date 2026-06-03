@@ -78,36 +78,15 @@ class _LoginPageState extends State<LoginPage> {
       String? token = result['accessToken'];
       if (token != null) {
         await _storage.write(key: 'auth_token', value: token);
-
-        if (!mounted) return;
-
-        // Hiện thông báo
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Đăng nhập thành công!"),
-            backgroundColor: Colors.green,
-          ),
-        );
-
-        // Chuyển trang NGAY LẬP TỨC
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (context) => const HomePage()),
-          (Route<dynamic> route) => false,
-        );
-        return; // Thoát hàm để không chạy xuống dưới
+        _onLoginSuccess("Đăng nhập thành công!");
       } else {
+        setState(() => _isLoading = false);
         _showSnackBar("Không nhận được token xác thực từ máy chủ.");
       }
     } catch (e) {
-      if (mounted) {
-        String cleanError = e.toString().replaceAll('Exception: ', '');
-        _showSnackBar(cleanError);
-      }
-    }
-
-    // Chỉ chạy dòng này nếu đăng nhập thất bại
-    if (mounted) {
       setState(() => _isLoading = false);
+      String cleanError = e.toString().replaceAll('Exception: ', '');
+      _showSnackBar(cleanError);
     }
   }
 
@@ -127,8 +106,8 @@ class _LoginPageState extends State<LoginPage> {
       final String? idToken = googleAuth.idToken;
 
       if (idToken == null) {
+        setState(() => _isLoading = false);
         _showSnackBar("Không lấy được chứng thực từ Google.");
-        if (mounted) setState(() => _isLoading = false);
         return;
       }
 
@@ -137,31 +116,15 @@ class _LoginPageState extends State<LoginPage> {
       String? token = result['accessToken'];
       if (token != null) {
         await _storage.write(key: 'auth_token', value: token);
-
-        if (!mounted) return;
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Đăng nhập bằng Google thành công!"),
-            backgroundColor: Colors.green,
-          ),
-        );
-
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (context) => const HomePage()),
-          (Route<dynamic> route) => false,
-        );
-        return;
+        _onLoginSuccess("Đăng nhập bằng Google thành công!");
+      } else {
+        setState(() => _isLoading = false);
+        _showSnackBar("Lỗi: Không có Token");
       }
     } catch (e) {
-      if (mounted) {
-        String cleanError = e.toString().replaceAll('Exception: ', '');
-        _showSnackBar("Google Sign-In thất bại: $cleanError");
-      }
-    }
-
-    if (mounted) {
       setState(() => _isLoading = false);
+      String cleanError = e.toString().replaceAll('Exception: ', '');
+      _showSnackBar("Google Sign-In thất bại: $cleanError");
     }
   }
 
@@ -185,41 +148,51 @@ class _LoginPageState extends State<LoginPage> {
         String? token = result['accessToken'];
         if (token != null) {
           await _storage.write(key: 'auth_token', value: token);
-
-          if (!mounted) return;
-
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("Đăng nhập bằng Facebook thành công!"),
-              backgroundColor: Colors.green,
-            ),
-          );
-
-          Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (context) => const HomePage()),
-            (Route<dynamic> route) => false,
-          );
-          return;
+          _onLoginSuccess("Đăng nhập bằng Facebook thành công!");
+        } else {
+          setState(() => _isLoading = false);
+          _showSnackBar("Lỗi: Không có Token");
         }
       } else if (fbResult.status == LoginStatus.cancelled) {
-        if (mounted) setState(() => _isLoading = false);
-        return;
+        setState(() => _isLoading = false);
       } else {
+        setState(() => _isLoading = false);
         _showSnackBar("Lỗi Facebook: ${fbResult.message}");
       }
     } catch (e) {
-      if (mounted) {
-        String cleanError = e.toString().replaceAll('Exception: ', '');
-        _showSnackBar(cleanError);
-      }
-    }
-
-    if (mounted) {
       setState(() => _isLoading = false);
+      String cleanError = e.toString().replaceAll('Exception: ', '');
+      _showSnackBar(cleanError);
     }
   }
 
+  // ================= TÁCH HÀM XỬ LÝ KHI THÀNH CÔNG =================
+  void _onLoginSuccess(String message) {
+    if (!mounted) return;
+
+    // Hiện thông báo
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.green,
+        duration: const Duration(seconds: 1),
+      ),
+    );
+
+    // XÓA HÀM addPostFrameCallback. CHUYỂN TRANG TRỰC TIẾP
+    Future.delayed(const Duration(milliseconds: 300), () {
+      if (mounted) {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const HomePage()),
+          (Route<dynamic> route) => false,
+        );
+      }
+    });
+  }
+
   void _showSnackBar(String message) {
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message), behavior: SnackBarBehavior.floating),
     );
