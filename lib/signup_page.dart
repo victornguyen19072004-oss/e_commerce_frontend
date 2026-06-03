@@ -5,7 +5,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart'; 
 import 'services/auth_service.dart';
 import '../config/google_config.dart';
-import 'login_page.dart'; // IMPORT TRANG LOGIN (HOẶC DÙNG ROUTE)
+import 'home_page.dart'; // IMPORT TRANG HOME
 
 class SignUpPage extends StatefulWidget {
    const SignUpPage({Key? key}) : super(key: key);
@@ -48,15 +48,15 @@ class _SignUpPageState extends State<SignUpPage> {
        SnackBar(content: Text(message), backgroundColor: Colors.green, duration: const Duration(seconds: 1)),
      );
 
-     debugPrint("=== [DEBUG]: Đang chuẩn bị chuyển sang LoginPage ===");
+     debugPrint("=== [DEBUG]: Đang chuẩn bị chuyển sang HomePage ===");
 
      Future.delayed(const Duration(milliseconds: 300), () {
         if (mounted) {
-            debugPrint("=== [DEBUG]: Đang thực thi lệnh Navigator chuyển về Login ===");
-            // Đăng ký thành công -> Chuyển hướng sang màn hình Đăng Nhập
+            debugPrint("=== [DEBUG]: Đang thực thi lệnh Navigator chuyển về Home ===");
+            // Đăng ký thành công (đã có token) -> Chuyển thẳng sang màn hình Home
             Navigator.pushAndRemoveUntil(
               context,
-              MaterialPageRoute(builder: (context) => const LoginPage()),
+              MaterialPageRoute(builder: (context) => const HomePage()),
               (Route<dynamic> route) => false,
             );
         } else {
@@ -94,7 +94,7 @@ class _SignUpPageState extends State<SignUpPage> {
         if (token != null) {
           await _storage.write(key: 'auth_token', value: token);
           debugPrint("=== [DEBUG]: Đã lưu Token thành công ===");
-          _onSignUpSuccess("Đăng ký thành công! Vui lòng đăng nhập.");
+          _onSignUpSuccess("Đăng ký thành công!");
           return;
         }
      } catch (e) {
@@ -127,7 +127,7 @@ class _SignUpPageState extends State<SignUpPage> {
         String? token = result['accessToken'];
         if (token != null) {
           await _storage.write(key: 'auth_token', value: token);
-          _onSignUpSuccess("Đăng ký bằng Google thành công! Vui lòng đăng nhập.");
+          _onSignUpSuccess("Đăng ký bằng Google thành công!");
           return;
         }
      } catch (e) {
@@ -155,7 +155,7 @@ class _SignUpPageState extends State<SignUpPage> {
           String? token = result['accessToken'];
           if (token != null) {
              await _storage.write(key: 'auth_token', value: token);
-             _onSignUpSuccess("Đăng ký bằng Facebook thành công! Vui lòng đăng nhập.");
+             _onSignUpSuccess("Đăng ký bằng Facebook thành công!");
              return;
           }
         } else if (fbResult.status == LoginStatus.cancelled) {
