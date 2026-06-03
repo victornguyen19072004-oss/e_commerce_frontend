@@ -5,7 +5,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'services/auth_service.dart';
 import '../config/google_config.dart';
-// KHÔNG cần import 'home_page.dart' vì chúng ta sẽ dùng route '/home'
+import 'home_page.dart'; // IMPORT LẠI HOME PAGE
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -49,17 +49,32 @@ class _LoginPageState extends State<LoginPage> {
     setState(() => _isEmailValid = isValid);
   }
 
-  // --- HÀM XỬ LÝ CHUYỂN TRANG AN TOÀN ---
+  // --- HÀM XỬ LÝ CHUYỂN TRANG AN TOÀN KÈM LOG ---
   void _onLoginSuccess(String message) {
     if (!mounted) return;
     
-    // Hiện thông báo
+    debugPrint("=== [DEBUG]: Bắt đầu hàm _onLoginSuccess ===");
+    debugPrint("=== [DEBUG]: Chuẩn bị hiện SnackBar ===");
+    
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: Colors.green),
+      SnackBar(content: Text(message), backgroundColor: Colors.green, duration: const Duration(seconds: 1)),
     );
 
-    // Chuyển hướng về Home và xóa sạch lịch sử trang (không cho back lại Login)
-    Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false);
+    debugPrint("=== [DEBUG]: Chuẩn bị chuyển sang HomePage ===");
+
+    // Dùng pushAndRemoveUntil với MaterialPageRoute là cách an toàn và dứt khoát nhất
+    Future.delayed(const Duration(milliseconds: 300), () {
+      if (mounted) {
+        debugPrint("=== [DEBUG]: Đang thực thi lệnh Navigator.pushAndRemoveUntil ===");
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const HomePage()),
+          (Route<dynamic> route) => false,
+        );
+      } else {
+        debugPrint("=== [DEBUG LỖI]: Widget đã unmounted trước khi kịp chuyển trang! ===");
+      }
+    });
   }
 
   void _showSnackBar(String message) {
@@ -91,8 +106,9 @@ class _LoginPageState extends State<LoginPage> {
       String? token = result['accessToken'];
       if (token != null) {
         await _storage.write(key: 'auth_token', value: token);
+        debugPrint("=== [DEBUG]: Đã lưu Token thành công ===");
         _onLoginSuccess("Đăng nhập thành công!");
-        return; // Thoát sớm, không chạy xuống finally
+        return; 
       } else {
         _showSnackBar("Không nhận được token xác thực từ máy chủ.");
       }
@@ -150,10 +166,7 @@ class _LoginPageState extends State<LoginPage> {
       if (fbResult.status == LoginStatus.success) {
         final AccessToken accessToken = fbResult.accessToken!;
 
-        final result = await _authService.oauthLogin(
-          "facebook",
-          accessToken.tokenString,
-        );
+        final result = await _authService.oauthLogin("facebook", accessToken.tokenString);
 
         String? token = result['accessToken'];
         if (token != null) {
@@ -193,17 +206,11 @@ class _LoginPageState extends State<LoginPage> {
               ),
               const SizedBox(height: 32),
 
-              const Text(
-                'Login',
-                style: TextStyle(fontSize: 34, fontWeight: FontWeight.bold, color: Colors.black),
-              ),
+              const Text('Login', style: TextStyle(fontSize: 34, fontWeight: FontWeight.bold, color: Colors.black)),
               const SizedBox(height: 72),
 
               _buildTextField(
-                label: 'Email',
-                controller: _emailController,
-                onChanged: _validateEmail,
-                isError: !_isEmailValid,
+                label: 'Email', controller: _emailController, onChanged: _validateEmail, isError: !_isEmailValid,
                 errorText: 'Not a valid email address. Should be your@email.com',
                 suffixIcon: _isEmailValid
                     ? Image.asset('assets/images/icon/green-tick.png', width: 20, height: 20)
@@ -211,11 +218,7 @@ class _LoginPageState extends State<LoginPage> {
               ),
               const SizedBox(height: 8),
 
-              _buildTextField(
-                label: 'Password',
-                controller: _passwordController,
-                isPassword: true,
-              ),
+              _buildTextField(label: 'Password', controller: _passwordController, isPassword: true),
               const SizedBox(height: 16),
 
               Row(
@@ -231,13 +234,11 @@ class _LoginPageState extends State<LoginPage> {
               const SizedBox(height: 28),
 
               SizedBox(
-                width: double.infinity,
-                height: 48,
+                width: double.infinity, height: 48,
                 child: ElevatedButton(
                   onPressed: _isLoading ? null : _handleLogin,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFDB3022),
-                    elevation: 4,
+                    backgroundColor: const Color(0xFFDB3022), elevation: 4,
                     shadowColor: const Color(0xFFDB3022).withOpacity(0.4),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
                   ),
@@ -257,15 +258,9 @@ class _LoginPageState extends State<LoginPage> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        GestureDetector(
-                          onTap: _isLoading ? null : _handleGoogleSignIn,
-                          child: _buildSocialButton('assets/images/button/google-icon.png'),
-                        ),
+                        GestureDetector(onTap: _isLoading ? null : _handleGoogleSignIn, child: _buildSocialButton('assets/images/button/google-icon.png')),
                         const SizedBox(width: 16),
-                        GestureDetector(
-                          onTap: _isLoading ? null : _handleFacebookSignIn, 
-                          child: _buildSocialButton('assets/images/button/facebook-icon.png', isRounded: true),
-                        ),
+                        GestureDetector(onTap: _isLoading ? null : _handleFacebookSignIn, child: _buildSocialButton('assets/images/button/facebook-icon.png', isRounded: true)),
                       ],
                     ),
                   ],
@@ -278,47 +273,28 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Widget _buildTextField({
-    required String label,
-    TextEditingController? controller,
-    Widget? suffixIcon,
-    bool isPassword = false,
-    bool isError = false,
-    String? errorText,
-    Function(String)? onChanged,
-  }) {
+  Widget _buildTextField({required String label, TextEditingController? controller, Widget? suffixIcon, bool isPassword = false, bool isError = false, String? errorText, Function(String)? onChanged}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
           decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(4),
+            color: Colors.white, borderRadius: BorderRadius.circular(4),
             border: isError ? Border.all(color: Colors.red, width: 1.0) : null,
-            boxShadow: [
-              if (!isError) BoxShadow(color: Colors.black.withOpacity(0.05), offset: const Offset(0, 1), blurRadius: 8),
-            ],
+            boxShadow: [if (!isError) BoxShadow(color: Colors.black.withOpacity(0.05), offset: const Offset(0, 1), blurRadius: 8)],
           ),
           child: TextFormField(
-            controller: controller,
-            obscureText: isPassword,
-            onChanged: onChanged,
+            controller: controller, obscureText: isPassword, onChanged: onChanged,
             style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
             decoration: InputDecoration(
-              labelText: label,
-              labelStyle: TextStyle(color: isError ? Colors.red : Colors.grey, fontSize: 13),
+              labelText: label, labelStyle: TextStyle(color: isError ? Colors.red : Colors.grey, fontSize: 13),
               contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-              border: InputBorder.none,
-              floatingLabelBehavior: FloatingLabelBehavior.always,
+              border: InputBorder.none, floatingLabelBehavior: FloatingLabelBehavior.always,
               suffixIcon: suffixIcon != null ? Padding(padding: const EdgeInsets.all(16.0), child: suffixIcon) : null,
             ),
           ),
         ),
-        if (isError && errorText != null)
-          Padding(
-            padding: const EdgeInsets.only(top: 6.0, left: 16.0),
-            child: Text(errorText, style: const TextStyle(color: Colors.red, fontSize: 12)),
-          ),
+        if (isError && errorText != null) Padding(padding: const EdgeInsets.only(top: 6.0, left: 16.0), child: Text(errorText, style: const TextStyle(color: Colors.red, fontSize: 12))),
       ],
     );
   }
@@ -326,19 +302,3 @@ class _LoginPageState extends State<LoginPage> {
   Widget _buildSocialButton(String assetPath, {bool isRounded = false}) {
     return Container(
       width: 92, height: 64,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8)],
-      ),
-      child: Center(
-        child: isRounded
-            ? ClipRRect(borderRadius: BorderRadius.circular(4.0), child: Image.asset(assetPath, width: 24, height: 24, fit: BoxFit.cover))
-            : Image.asset(
-                assetPath, width: 24, height: 24,
-                errorBuilder: (context, error, stackTrace) => Icon(assetPath.contains('google') ? Icons.g_mobiledata : Icons.facebook, size: 32, color: Colors.grey),
-              ),
-      ),
-    );
-  }
-}
