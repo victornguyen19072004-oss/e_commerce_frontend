@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:flutter_facebook_auth/flutter_facebook_auth.dart'; // Import Facebook Auth
+import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'services/auth_service.dart';
 import '../config/google_config.dart';
 import 'home_page.dart';
+
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
 
@@ -67,6 +68,7 @@ class _LoginPageState extends State<LoginPage> {
     }
 
     setState(() => _isLoading = true);
+    bool isSuccess = false; // Cờ kiểm tra trạng thái
 
     try {
       final result = await _authService.login(
@@ -77,19 +79,7 @@ class _LoginPageState extends State<LoginPage> {
       String? token = result['accessToken'];
       if (token != null) {
         await _storage.write(key: 'auth_token', value: token);
-
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("Đăng nhập thành công!"),
-              backgroundColor: Colors.green,
-            ),
-          );
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const HomePage()),
-          ); // Chuyển vào trang chủ
-        }
+        isSuccess = true; // Đánh dấu thành công
       } else {
         _showSnackBar("Không nhận được token xác thực từ máy chủ.");
       }
@@ -99,15 +89,33 @@ class _LoginPageState extends State<LoginPage> {
         _showSnackBar(cleanError);
       }
     } finally {
-      if (mounted) {
+      // Chỉ tắt loading nếu đăng nhập THẤT BẠI
+      if (mounted && !isSuccess) {
         setState(() => _isLoading = false);
       }
+    }
+
+    // Thực hiện chuyển trang tách biệt khỏi khối try/catch
+    if (isSuccess && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Đăng nhập thành công!"),
+          backgroundColor: Colors.green,
+        ),
+      );
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => const HomePage()),
+        (Route<dynamic> route) => false, // Xóa toàn bộ stack cũ
+      );
     }
   }
 
   // ====================== ĐĂNG NHẬP BẰNG GOOGLE ======================
   Future<void> _handleGoogleSignIn() async {
     setState(() => _isLoading = true);
+    bool isSuccess = false;
+
     try {
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       if (googleUser == null) {
@@ -129,19 +137,7 @@ class _LoginPageState extends State<LoginPage> {
       String? token = result['accessToken'];
       if (token != null) {
         await _storage.write(key: 'auth_token', value: token);
-
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("Đăng nhập bằng Google thành công!"),
-              backgroundColor: Colors.green,
-            ),
-          );
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const HomePage()),
-          );
-        }
+        isSuccess = true;
       }
     } catch (e) {
       if (mounted) {
@@ -149,15 +145,31 @@ class _LoginPageState extends State<LoginPage> {
         _showSnackBar("Google Sign-In thất bại: $cleanError");
       }
     } finally {
-      if (mounted) {
+      if (mounted && !isSuccess) {
         setState(() => _isLoading = false);
       }
+    }
+
+    if (isSuccess && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Đăng nhập bằng Google thành công!"),
+          backgroundColor: Colors.green,
+        ),
+      );
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => const HomePage()),
+        (Route<dynamic> route) => false,
+      );
     }
   }
 
   // ====================== ĐĂNG NHẬP BẰNG FACEBOOK ======================
   Future<void> _handleFacebookSignIn() async {
     setState(() => _isLoading = true);
+    bool isSuccess = false;
+
     try {
       final LoginResult fbResult = await FacebookAuth.instance.login(
         permissions: ['email', 'public_profile'],
@@ -174,19 +186,7 @@ class _LoginPageState extends State<LoginPage> {
         String? token = result['accessToken'];
         if (token != null) {
           await _storage.write(key: 'auth_token', value: token);
-
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text("Đăng nhập bằng Facebook thành công!"),
-                backgroundColor: Colors.green,
-              ),
-            );
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => const HomePage()),
-            );
-          }
+          isSuccess = true;
         }
       } else if (fbResult.status == LoginStatus.cancelled) {
         setState(() => _isLoading = false);
@@ -200,9 +200,23 @@ class _LoginPageState extends State<LoginPage> {
         _showSnackBar(cleanError);
       }
     } finally {
-      if (mounted) {
+      if (mounted && !isSuccess) {
         setState(() => _isLoading = false);
       }
+    }
+
+    if (isSuccess && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Đăng nhập bằng Facebook thành công!"),
+          backgroundColor: Colors.green,
+        ),
+      );
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => const HomePage()),
+        (Route<dynamic> route) => false,
+      );
     }
   }
 
@@ -353,9 +367,7 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         const SizedBox(width: 16),
                         GestureDetector(
-                          onTap: _isLoading
-                              ? null
-                              : _handleFacebookSignIn, // Kích hoạt nút Facebook
+                          onTap: _isLoading ? null : _handleFacebookSignIn,
                           child: _buildSocialButton(
                             'assets/images/button/facebook-icon.png',
                             isRounded: true,
