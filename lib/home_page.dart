@@ -20,7 +20,6 @@ class _HomePageState extends State<HomePage> {
   final String _baseUrl =
       "https://ecommerce-backend-8wur.onrender.com/api/products";
 
-  // Ánh xạ đầy đủ tất cả sản phẩm
   final Map<String, String> _imageMap = {
     // --- CÁC SẢN PHẨM CŨ ---
     "Áo Thun Nam Mùa Hè": "assets/images/product/ao_thun.jpg",
@@ -31,7 +30,6 @@ class _HomePageState extends State<HomePage> {
     "Túi Xách Da Đeo Chéo": "assets/images/product/tui_xach.jfif",
 
     // --- CÁC SẢN PHẨM MỚI (50 MÓN) ---
-    // 1. Shirts & Blouses
     "Áo Sơ Mi Lụa Cổ V": "assets/images/categories/shirts_blouses/shirt_v.jfif",
     "Áo Blouse Công Sở Tay Bồng":
         "assets/images/categories/shirts_blouses/blouse_office.jfif",
@@ -41,8 +39,6 @@ class _HomePageState extends State<HomePage> {
         "assets/images/categories/shirts_blouses/blouse_pattern.jfif",
     "Áo Sơ Mi Trắng Basic":
         "assets/images/categories/shirts_blouses/shirt_classic.jfif",
-
-    // 2. Cardigans & Sweaters
     "Áo Cardigan Dáng Dài":
         "assets/images/categories/cardigans_sweaters/cardigan_long.jfif",
     "Áo Len Cổ Lọ Ấm Áp":
@@ -53,8 +49,6 @@ class _HomePageState extends State<HomePage> {
         "assets/images/categories/cardigans_sweaters/sweater_v.jfif",
     "Áo Khoác Len Mỏng Mùa Thu":
         "assets/images/categories/cardigans_sweaters/sweater_fall.jfif",
-
-    // 3. Knitwear
     "Áo Dệt Kim Tay Ngắn": "assets/images/categories/knitwear/ao_det_kim.jfif",
     "Đầm Dệt Kim Ôm Body": "assets/images/categories/knitwear/dam_det_kim.jfif",
     "Áo Khoác Dệt Kim Cài Nút":
@@ -63,8 +57,6 @@ class _HomePageState extends State<HomePage> {
         "assets/images/categories/knitwear/chan_vay_len.jfif",
     "Set Bộ Dệt Kim Thanh Lịch":
         "assets/images/categories/knitwear/set_bo_det_kim.jfif",
-
-    // 4. Blazers
     "Áo Blazer Nữ Đen Classic":
         "assets/images/categories/blazers/ao_blazer.jfif",
     "Blazer Kẻ Caro Trẻ Trung":
@@ -74,8 +66,6 @@ class _HomePageState extends State<HomePage> {
     "Blazer Ngắn Tay Mùa Hè":
         "assets/images/categories/blazers/blazer_fall.jfif",
     "Áo Khoác Blazer Kaki": "assets/images/categories/blazers/blazer_kaki.jfif",
-
-    // 5. Outerwear
     "Áo Khoác Dạ Dáng Dài":
         "assets/images/categories/outerwear/outerwear_long.jfif",
     "Áo Phao Dáng Ngắn": "assets/images/categories/outerwear/phao_ngan.jfif",
@@ -83,8 +73,6 @@ class _HomePageState extends State<HomePage> {
     "Áo Khoác Bomber Năng Động":
         "assets/images/categories/outerwear/khoac_bomber.jfif",
     "Áo Măng Tô Kaki": "assets/images/categories/outerwear/mang_to_kaki.jfif",
-
-    // 6. Pants
     "Quần Tây Công Sở Dáng Đứng":
         "assets/images/categories/pants/pant_office.jfif",
     "Quần Ống Suông Vải Mềm":
@@ -92,8 +80,6 @@ class _HomePageState extends State<HomePage> {
     "Quần Kaki Nữ Năng Động": "assets/images/categories/pants/pant_kaki.jfif",
     "Quần Baggy Lưng Cao": "assets/images/categories/pants/pant_baggy.jfif",
     "Quần Thể Thao Jogger": "assets/images/categories/pants/pant_jogger.jfif",
-
-    // 7. Jeans
     "Quần Jeans Skinny Xanh Đậm":
         "assets/images/categories/jeans/jean_skinny.jfif",
     "Quần Jeans Ống Loe Retro":
@@ -102,8 +88,6 @@ class _HomePageState extends State<HomePage> {
     "Quần Mom Jeans Lưng Cao": "assets/images/categories/jeans/jean_mom.jfif",
     "Quần Shorts Jeans Gấu Tua Rua":
         "assets/images/categories/jeans/jean_short.jfif",
-
-    // 8. Shorts
     "Quần Short Kaki Cơ Bản": "assets/images/categories/shorts/short_kaki.jfif",
     "Quần Short Vải Linen Mùa Hè":
         "assets/images/categories/shorts/short_linen.jfif",
@@ -111,8 +95,6 @@ class _HomePageState extends State<HomePage> {
         "assets/images/categories/shorts/short_cotton.jfif",
     "Quần Giả Váy Xếp Ly": "assets/images/categories/shorts/short_vay.jfif",
     "Quần Short Da Thời Trang": "assets/images/categories/shorts/short_da.jfif",
-
-    // 9. Skirts
     "Chân Váy Chữ A Công Sở": "assets/images/categories/skirts/skirt_A.jfif",
     "Chân Váy Midi Xếp Ly": "assets/images/categories/skirts/skirt_midi.jfif",
     "Chân Váy Hoa Nhí Dáng Dài":
@@ -120,8 +102,6 @@ class _HomePageState extends State<HomePage> {
     "Chân Váy Jean Ngắn": "assets/images/categories/skirts/skirt_jean.jfif",
     "Chân Váy Bút Chì Ôm Dáng":
         "assets/images/categories/skirts/skirt_pencil.jfif",
-
-    // 10. Dresses
     "Đầm Maxi Trễ Vai Đi Biển":
         "assets/images/categories/dresses/dress_maxi.jfif",
     "Váy Xòe Họa Tiết Hoa Nhí":
@@ -247,7 +227,7 @@ class _HomePageState extends State<HomePage> {
     required bool isNew,
   }) {
     return SizedBox(
-      height: 300,
+      height: 240,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         clipBehavior: Clip.none,
@@ -256,11 +236,8 @@ class _HomePageState extends State<HomePage> {
         itemBuilder: (context, index) {
           final product = products[index];
           String productName = product['productName'] ?? '';
-
-          // Lấy đúng ảnh theo Map, nếu không có lấy ảnh mặc định
           String imagePath =
               _imageMap[productName] ?? 'assets/images/product/ao_thun.jpg';
-
           double salePrice =
               double.tryParse(product['salePrice'].toString()) ?? 0.0;
           double comparePrice =
@@ -270,7 +247,7 @@ class _HomePageState extends State<HomePage> {
               : "-20%";
 
           return Container(
-            width: 150,
+            width: 140,
             margin: const EdgeInsets.only(right: 16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -282,14 +259,13 @@ class _HomePageState extends State<HomePage> {
                       borderRadius: BorderRadius.circular(8.0),
                       child: Image.asset(
                         imagePath,
-                        height: 184,
-                        width: 150,
+                        height: 160,
+                        width: 140,
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) => Container(
-                          height: 184,
-                          width: 150,
+                          height: 160,
+                          width: 140,
                           color: Colors.grey[300],
-                          child: const Icon(Icons.image, color: Colors.grey),
                         ),
                       ),
                     ),
@@ -414,50 +390,104 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  // KHÔI PHỤC LẠI GIAO DIỆN CHUẨN FIGMA
   Widget _buildMain3Grid() {
     return Column(
       children: [
-        Container(
-          height: 450,
-          color: Colors.black,
-          width: double.infinity,
-          child: Image.asset(
-            'assets/images/home_page/big_main.png',
-            fit: BoxFit.cover,
-          ),
+        _buildGridItem(
+          'assets/images/home_page/big_main.png',
+          'New collection',
+          400,
+          isRight: true,
+          isHeading: true,
         ),
-        Row(
-          children: [
-            Expanded(
-              child: Column(
-                children: [
-                  Container(height: 150, color: Colors.white),
-                  Container(height: 150, color: Colors.black),
-                ],
+        SizedBox(
+          height: 300,
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  children: [
+                    Expanded(
+                      child: _buildGridItem(
+                        'assets/images/home_page/summer_sale.png',
+                        'Summer\nsale',
+                        150,
+                        isRedTitle: true,
+                        isVerticalTitle: true,
+                      ),
+                    ),
+                    Expanded(
+                      child: _buildGridItem(
+                        'assets/images/home_page/main_2.png',
+                        'Black',
+                        150,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            Expanded(child: Container(height: 300, color: Colors.black)),
-          ],
+              Expanded(
+                child: _buildGridItem(
+                  'assets/images/home_page/main_3.png',
+                  "",
+                  300,
+                ),
+              ),
+            ],
+          ),
         ),
       ],
     );
   }
 
+  Widget _buildGridItem(
+    String path,
+    String title,
+    double height, {
+    bool isRight = false,
+    bool isHeading = false,
+    bool isRedTitle = false,
+    bool isVerticalTitle = false,
+  }) {
+    return Container(
+      height: height,
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        image: DecorationImage(image: AssetImage(path), fit: BoxFit.cover),
+      ),
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        alignment: isRight
+            ? Alignment.bottomRight
+            : (isVerticalTitle ? Alignment.centerLeft : Alignment.bottomLeft),
+        child: Text(
+          title,
+          style: TextStyle(
+            color: isRedTitle ? const Color(0xFFDB3022) : Colors.white,
+            fontSize: isHeading ? 34 : 24,
+            fontWeight: FontWeight.bold,
+            height: 1.1,
+          ),
+        ),
+      ),
+    );
+  }
+
+  // KHÔI PHỤC LOGIC CHUYỂN TAB
   Widget _buildBottomNavigationBar() {
     return BottomNavigationBar(
       currentIndex: _currentIndex,
       onTap: (index) {
         if (_currentIndex == index) return;
-
         if (index == 1) {
-          // Bấm vào tab Shop -> Chuyển sang ShopPage
           Navigator.pushReplacement(
             context,
             PageRouteBuilder(
               pageBuilder: (context, animation1, animation2) =>
                   const ShopPage(),
-              transitionDuration:
-                  Duration.zero, // Tắt hiệu ứng để giống chuyển tab
+              transitionDuration: Duration.zero,
               reverseTransitionDuration: Duration.zero,
             ),
           );
