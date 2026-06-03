@@ -93,6 +93,9 @@ class _SignUpPageState extends State<SignUpPage> {
   Future<void> _handleFacebookSignIn() async {
     setState(() => _isLoading = true);
     try {
+      // THÊM DÒNG NÀY ĐỂ XÓA CACHE TOKEN CŨ TRÊN IPHONE
+      await FacebookAuth.instance.logOut();
+
       final LoginResult fbResult = await FacebookAuth.instance.login(
         permissions: ['email', 'public_profile'],
       );

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
 import 'package:device_preview/device_preview.dart';
-
+import 'home_page.dart'; // Đừng quên import
 // Import các màn hình
 import 'login_page.dart';
 import 'signup_page.dart';
@@ -56,6 +56,7 @@ class EcommerceApp extends StatelessWidget {
       // Đặt initialRoute là /signup để chạy thẳng vào màn hình Đăng ký
       initialRoute: '/signup',
       routes: {
+        '/home': (context) => const HomePage(),
         '/login': (context) => const LoginPage(),
         '/signup': (context) => const SignUpPage(),
         '/forgot': (context) => const ForgotPasswordPage(),

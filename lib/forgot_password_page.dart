@@ -9,7 +9,7 @@ class ForgotPasswordPage extends StatefulWidget {
 
 class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   final TextEditingController _emailController = TextEditingController();
-  
+
   bool _isEmailValid = false;
   bool _isEmailTouched = false;
 
@@ -27,7 +27,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
         _isEmailValid = false;
       } else {
         // Biểu thức chính quy kiểm tra định dạng email
-        _isEmailValid = RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+").hasMatch(value);
+        _isEmailValid = RegExp(
+          r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+",
+        ).hasMatch(value);
       }
     });
   }
@@ -35,7 +37,8 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   @override
   Widget build(BuildContext context) {
     // Chỉ hiển thị lỗi khi người dùng đã gõ ký tự và định dạng không hợp lệ
-    final bool showEmailError = _isEmailTouched && _emailController.text.isNotEmpty && !_isEmailValid;
+    final bool showEmailError =
+        _isEmailTouched && _emailController.text.isNotEmpty && !_isEmailValid;
 
     return Scaffold(
       body: SafeArea(
@@ -87,20 +90,21 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                 controller: _emailController,
                 onChanged: _validateEmail,
                 isError: showEmailError, // Kích hoạt UI viền đỏ khi có lỗi
-                errorText: 'Not a valid email address. Should be your@email.com',
+                errorText:
+                    'Not a valid email address. Should be your@email.com',
                 suffixIcon: _emailController.text.isEmpty
                     ? null // Không hiện icon nếu ô trống
                     : _isEmailValid
-                        ? Image.asset(
-                            'assets/images/icon/green-tick.png',
-                            width: 20,
-                            height: 20,
-                          )
-                        : Image.asset(
-                            'assets/images/icon/red-tick.png',
-                            width: 20,
-                            height: 20,
-                          ),
+                    ? Image.asset(
+                        'assets/images/icon/green-tick.png',
+                        width: 20,
+                        height: 20,
+                      )
+                    : Image.asset(
+                        'assets/images/icon/red-tick.png',
+                        width: 20,
+                        height: 20,
+                      ),
               ),
               const SizedBox(height: 55),
 
@@ -113,7 +117,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                     // Logic xử lý gửi email khôi phục mật khẩu
                     if (_isEmailValid) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Reset link sent to your email!')),
+                        const SnackBar(
+                          content: Text('Reset link sent to your email!'),
+                        ),
                       );
                     }
                   },
@@ -147,9 +153,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     required String label,
     TextEditingController? controller,
     Widget? suffixIcon,
-    bool isError = false, 
-    String? errorText,    
-    Function(String)? onChanged, 
+    bool isError = false,
+    String? errorText,
+    Function(String)? onChanged,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -159,7 +165,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
             color: Colors.white,
             borderRadius: BorderRadius.circular(4),
             // Đổi viền sang màu đỏ nếu có lỗi
-            border: isError ? Border.all(color: const Color(0xFFE82626), width: 1.0) : null,
+            border: isError
+                ? Border.all(color: const Color(0xFFE82626), width: 1.0)
+                : null,
             boxShadow: [
               if (!isError) // Ẩn bóng mờ đi nếu đang ở trạng thái báo lỗi viền đỏ
                 BoxShadow(
@@ -182,11 +190,17 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                 fontSize: 13,
                 fontWeight: FontWeight.normal,
               ),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 20,
+                vertical: 16,
+              ),
               border: InputBorder.none,
-              floatingLabelBehavior: FloatingLabelBehavior.always, 
+              floatingLabelBehavior: FloatingLabelBehavior.always,
               suffixIcon: suffixIcon != null
-                  ? Padding(padding: const EdgeInsets.all(16.0), child: suffixIcon)
+                  ? Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: suffixIcon,
+                    )
                   : null,
             ),
           ),
