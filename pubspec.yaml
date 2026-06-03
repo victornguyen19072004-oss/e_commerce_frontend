@@ -94,6 +94,22 @@ flutter:
     - assets/images/product/kinh_mat.jpg
     - assets/images/product/quan_jean.jpg
     - assets/images/product/tui_xach.jfif
+
+    # === DANH MỤC SẢN PHẨM (Categories) ===
+    - assets/images/categories/
+    - assets/images/categories/shirts_blouses/
+    - assets/images/categories/cardigans_sweaters/
+    - assets/images/categories/knitwear/
+    - assets/images/categories/blazers/
+    - assets/images/categories/outerwear/
+    - assets/images/categories/pants/
+    - assets/images/categories/jeans/
+    - assets/images/categories/shorts/
+    - assets/images/categories/skirts/
+    - assets/images/categories/dresses
+    # Shop Navigation & Display
+    - assets/images/shop_nav_bar/
+    - assets/images/cate_display/
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
 
